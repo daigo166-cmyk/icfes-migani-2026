@@ -3,11 +3,14 @@
 *Florencia, Caquetá, Colombia · DANE: 183001001598 · Código ICFES: 019158*
 
 ![Licencia](https://img.shields.io/badge/Licencia-Uso_Educativo_Gratuito-emerald?style=for-the-badge)
-![ICFES Récord](https://img.shields.io/badge/Récord_Histórico-404_Puntos-amber?style=for-the-badge)
+![Acceso](https://img.shields.io/badge/Acceso-Docentes_y_Directivos-amber?style=for-the-badge)
+![ICFES Récord](https://img.shields.io/badge/Récord_Histórico-404_Puntos-blue?style=for-the-badge)
 ![HTML5](https://img.shields.io/badge/HTML5-TailwindCSS-blue?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Producción-success?style=for-the-badge)
 
 Plataforma web interactiva para la visualización, caracterización diagnóstica, cuadro de honor con fotografías oficiales y comparativa histórica (2025 vs 2026) de los resultados institucionales de las Pruebas de Estado Saber 11 (ICFES).
+
+> **🔒 Control de Acceso Institucional**: Sistema protegido con contraseña de uso exclusivo para el cuerpo docente y equipo directivo de la institución educativa.
 
 ---
 
@@ -15,7 +18,7 @@ Plataforma web interactiva para la visualización, caracterización diagnóstica
 * **Software Creado por**: **Ing. Drigoberto Parra Sierra**
 * **Dependencia**: Área de Apoyo de Sistemas e Informática
 * **Institución**: Institución Educativa Juan Bautista Migani
-* **Propósito**: Herramienta de libre consulta y apoyo pedagógico para el Comité de Calidad, directivos, docentes, estudiantes y padres de familia.
+* **Propósito**: Herramienta de apoyo pedagógico y toma de decisiones para directivos y docentes.
 * **Licencia**: **Uso Educativo Gratuito** sin fines de lucro.
 
 ---

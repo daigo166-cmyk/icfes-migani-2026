@@ -46,701 +46,728 @@
       .no-print { display: none !important; }
       .print-only { display: block !important; }
     }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .animate-shake {
+      animation: shake 0.4s ease-in-out;
+    }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen pb-16">
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
 
-  <!-- HEADER INSTITUCIONAL CON LOGO DEL COLEGIO -->
-  <header class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white shadow-xl no-print">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div class="flex items-center space-x-4">
-          <!-- LOGO OFICIAL DEL COLEGIO -->
-          <div class="w-16 h-16 rounded-2xl bg-white/10 p-1.5 border border-white/20 flex items-center justify-center shadow-lg overflow-hidden backdrop-blur-sm">
-            <img src="fotos/logo.png" alt="Logo IE Juan Bautista Migani" class="w-full h-full object-contain" onerror="this.parentElement.innerHTML='<i data-lucide=\'graduation-cap\' class=\'w-8 h-8 text-amber-400\'></i>'">
+  <!-- ==================== PANTALLA DE ACCESO PROTEGIDO (LOGIN DOCENTES Y DIRECTIVOS) ==================== -->
+  <div id="auth-overlay" class="fixed inset-0 z-50 bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 flex items-center justify-center p-4">
+    <div class="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 max-w-md w-full text-white shadow-2xl text-center overflow-hidden">
+      <!-- Glow decorativo -->
+      <div class="absolute -top-20 -left-20 w-44 h-44 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-20 -right-20 w-44 h-44 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- Escudo del colegio -->
+      <div class="w-24 h-24 rounded-3xl bg-white/10 p-2 border border-white/30 mx-auto shadow-xl mb-4 backdrop-blur-md flex items-center justify-center">
+        <img src="fotos/logo.png" alt="Logo Colegio" class="w-full h-full object-contain">
+      </div>
+
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 text-[11px] font-bold uppercase tracking-wider mb-2">
+        <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+        <span>Uso Exclusivo Docentes y Directivos</span>
+      </span>
+
+      <h1 class="text-2xl font-black tracking-tight text-white mt-1">I.E. Juan Bautista Migani</h1>
+      <p class="text-xs text-slate-300 mt-1">Portal Oficial de Analítica Pruebas Saber 11</p>
+
+      <!-- Formulario de acceso -->
+      <form id="auth-form" onsubmit="event.preventDefault(); handleAuthSubmit(event); return false;" class="mt-6 space-y-4">
+        <div class="text-left">
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Contraseña de Acceso Institucional</label>
+          <div class="relative">
+            <i data-lucide="key-round" class="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400"></i>
+            <input type="password" id="auth-password" placeholder="Ingresa la contraseña..." autocomplete="current-password" required
+                   onkeydown="if(event.key==='Enter'){event.preventDefault(); handleAuthSubmit(event);}"
+                   class="w-full pl-10 pr-10 py-3 rounded-xl bg-white/10 border border-white/20 focus:border-amber-400 focus:bg-white/20 focus:ring-2 focus:ring-amber-400/30 text-white placeholder-slate-400 text-sm outline-none transition" />
+            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3.5 top-3.5 text-slate-400 hover:text-white transition" title="Mostrar/Ocultar contraseña">
+              <i data-lucide="eye" id="pwd-eye-icon" class="w-4 h-4"></i>
+            </button>
           </div>
-          <div>
+          <p id="auth-error" class="hidden text-xs text-rose-400 font-semibold mt-2 flex items-center gap-1">
+            <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
+            <span>Contraseña incorrecta. Acceso restringido a docentes y directivos.</span>
+          </p>
+        </div>
+
+        <button type="button" id="auth-submit-btn" onclick="handleAuthSubmit(event)" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm shadow-lg shadow-blue-900/40 transition transform active:scale-95 flex items-center justify-center gap-2">
+          <i data-lucide="log-in" class="w-4 h-4"></i>
+          <span>Ingresar al Sistema</span>
+        </button>
+      </form>
+
+      <div class="mt-6 pt-5 border-t border-white/10 text-[11px] text-slate-400 space-y-1">
+        <p class="font-medium text-slate-300">Área de Apoyo de Sistemas e Informática</p>
+        <p>Software desarrollado por el <strong>Ing. Drigoberto Parra Sierra</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== CONTENIDO DEL PORTAL (PROTEGIDO) ==================== -->
+  <div id="main-app" class="hidden">
+
+    <!-- HEADER INSTITUCIONAL -->
+    <header class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white shadow-xl no-print">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div class="flex items-center space-x-4">
+            <div class="w-16 h-16 rounded-2xl bg-white/10 p-1.5 border border-white/20 flex items-center justify-center shadow-lg overflow-hidden backdrop-blur-sm">
+              <img src="fotos/logo.png" alt="Logo IE Juan Bautista Migani" class="w-full h-full object-contain" onerror="this.parentElement.innerHTML='<i data-lucide=\'graduation-cap\' class=\'w-8 h-8 text-amber-400\'></i>'">
+            </div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider bg-amber-400/20 text-amber-300 border border-amber-400/40 rounded-full flex items-center gap-1">
+                  <i data-lucide="shield-check" class="w-3 h-3"></i>
+                  <span>Uso Exclusivo Docentes y Directivos</span>
+                </span>
+                <span class="text-xs text-slate-300">DANE: 183001001598 | Código: 019158</span>
+              </div>
+              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white mt-1">
+                I.E. Juan Bautista Migani <span class="text-amber-400 font-semibold text-lg">· Jornada Mañana</span>
+              </h1>
+              <p class="text-sm text-slate-300">Directorio Visual con Fotos Reales, Cuadro de Honor y Comparativa Histórica 2025 - 2026</p>
+            </div>
+          </div>
+
+          <!-- Acciones rápidas -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <a href="analisis_detallado_icfes_2026.xlsx" download="analisis_detallado_icfes_2026.xlsx" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-lg shadow-emerald-900/30">
+              <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+              <span>Exportar Excel</span>
+            </a>
+            <button onclick="window.print()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition">
+              <i data-lucide="printer" class="w-4 h-4"></i>
+              <span>Imprimir</span>
+            </button>
+            <button onclick="openCreditsModal()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 text-xs font-bold transition shadow-sm" title="Créditos del Software">
+              <i data-lucide="info" class="w-4 h-4"></i>
+              <span>Créditos</span>
+            </button>
+            <button onclick="logout()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-400/40 text-rose-300 text-xs font-bold transition shadow-sm" title="Cerrar Sesión Segura">
+              <i data-lucide="log-out" class="w-4 h-4"></i>
+              <span>Bloquear</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI BANNER -->
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-6 pt-6 border-t border-white/10">
+          <div class="bg-white/5 border border-white/10 rounded-xl p-3">
+            <p class="text-xs text-slate-400 font-medium">Promedio 2026</p>
+            <div class="flex items-baseline gap-1 mt-1">
+              <span class="text-2xl font-bold text-white">254.4</span>
+              <span class="text-xs text-rose-300/80 font-semibold">(-4.9 vs 2025)</span>
+            </div>
+          </div>
+          <div class="bg-white/5 border border-white/10 rounded-xl p-3">
+            <p class="text-xs text-slate-400 font-medium">Puntaje Récord Máximo</p>
+            <div class="flex items-baseline gap-1 mt-1">
+              <span class="text-2xl font-bold text-amber-400">404</span>
+              <span class="text-xs text-emerald-300/90 font-semibold">(+34 récord histórico)</span>
+            </div>
+          </div>
+          <div class="bg-white/5 border border-white/10 rounded-xl p-3">
+            <p class="text-xs text-slate-400 font-medium">Evaluados 2026</p>
+            <div class="flex items-baseline gap-1 mt-1">
+              <span class="text-2xl font-bold text-white">79</span>
+              <span class="text-xs text-slate-400">alumnos</span>
+            </div>
+          </div>
+          <div class="bg-white/5 border border-white/10 rounded-xl p-3">
+            <p class="text-xs text-slate-400 font-medium">Fotos Oficiales</p>
+            <div class="flex items-baseline gap-1 mt-1">
+              <span class="text-2xl font-bold text-emerald-400">75</span>
+              <span class="text-xs text-emerald-300/80 font-medium">/ 79 cargadas</span>
+            </div>
+          </div>
+          <div class="bg-white/5 border border-white/10 rounded-xl p-3 col-span-2 sm:col-span-1">
+            <p class="text-xs text-slate-400 font-medium">Sobresalientes (>300)</p>
+            <div class="flex items-baseline gap-1 mt-1">
+              <span class="text-2xl font-bold text-amber-400">10</span>
+              <span class="text-xs text-slate-300">alumnos (12.7%)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- NAVEGACIÓN DE PESTAÑAS -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm no-print">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex space-x-1 sm:space-x-4 overflow-x-auto py-2.5 custom-scroll">
+          <button onclick="switchTab('directorio')" id="tab-btn-directorio" class="tab-btn inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition text-blue-700 bg-blue-50 border border-blue-200">
+            <i data-lucide="users" class="w-4 h-4"></i>
+            <span>Directorio con Fotos</span>
+            <span class="px-2 py-0.5 text-xs bg-blue-200 text-blue-800 rounded-full font-bold">79</span>
+          </button>
+          <button onclick="switchTab('honor')" id="tab-btn-honor" class="tab-btn inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition text-slate-600 hover:text-slate-900 hover:bg-slate-100">
+            <i data-lucide="trophy" class="w-4 h-4 text-amber-500"></i>
+            <span>Cuadro de Honor (Top 10)</span>
+          </button>
+          <button onclick="switchTab('historico')" id="tab-btn-historico" class="tab-btn inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition text-slate-600 hover:text-slate-900 hover:bg-slate-100">
+            <i data-lucide="history" class="w-4 h-4 text-emerald-500"></i>
+            <span>Comparativa 2025 vs 2026</span>
+            <span class="px-2 py-0.5 text-xs bg-emerald-100 text-emerald-700 rounded-full font-bold">Histórico</span>
+          </button>
+          <button onclick="switchTab('analitica')" id="tab-btn-analitica" class="tab-btn inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition text-slate-600 hover:text-slate-900 hover:bg-slate-100">
+            <i data-lucide="bar-chart-3" class="w-4 h-4 text-indigo-500"></i>
+            <span>Gráficos y Salones</span>
+          </button>
+          <button onclick="switchTab('refuerzo')" id="tab-btn-refuerzo" class="tab-btn inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition text-slate-600 hover:text-slate-900 hover:bg-slate-100">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500"></i>
+            <span>Plan de Refuerzo</span>
+            <span class="px-2 py-0.5 text-xs bg-rose-100 text-rose-700 rounded-full font-bold">17</span>
+          </button>
+          <button onclick="switchTab('ausentes')" id="tab-btn-ausentes" class="tab-btn inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition text-slate-600 hover:text-slate-900 hover:bg-slate-100">
+            <i data-lucide="user-x" class="w-4 h-4 text-slate-400"></i>
+            <span>No Evaluados (SIMAT)</span>
+            <span class="px-2 py-0.5 text-xs bg-slate-200 text-slate-700 rounded-full font-bold">11</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+      <!-- ==================== PESTAÑA 1: DIRECTORIO VISUAL CON FOTOS ==================== -->
+      <section id="tab-directorio" class="tab-content space-y-6">
+        
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+            <div class="md:col-span-5 relative">
+              <i data-lucide="search" class="w-5 h-5 absolute left-3.5 top-3 text-slate-400"></i>
+              <input type="text" id="search-input" oninput="applyFilters()" placeholder="Buscar por nombre, documento o registro..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm transition" />
+            </div>
+
+            <div class="md:col-span-2">
+              <select id="filter-group" onchange="applyFilters()" class="w-full py-2.5 px-3 rounded-xl border border-slate-300 text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none">
+                <option value="ALL">Todos los Salones</option>
+                <option value="11-1">Salón 11-1 (29)</option>
+                <option value="11-2">Salón 11-2 (25)</option>
+                <option value="11-3">Salón 11-3 (25)</option>
+              </select>
+            </div>
+
+            <div class="md:col-span-3">
+              <select id="filter-tier" onchange="applyFilters()" class="w-full py-2.5 px-3 rounded-xl border border-slate-300 text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none">
+                <option value="ALL">Todo Nivel de Puntaje</option>
+                <option value="TOP10">Top 10 Institucional (≥300)</option>
+                <option value="SUPERIOR">Superior (280 - 299)</option>
+                <option value="MEDIO">Medio-Alto (240 - 279)</option>
+                <option value="BASICO">Básico (220 - 239)</option>
+                <option value="ALERTA">Refuerzo Prioritario (<220)</option>
+              </select>
+            </div>
+
+            <div class="md:col-span-2">
+              <select id="sort-by" onchange="applyFilters()" class="w-full py-2.5 px-3 rounded-xl border border-slate-300 text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none font-medium">
+                <option value="puesto-asc">Puesto (1° a 79°)</option>
+                <option value="global-desc">Mayor Puntaje</option>
+                <option value="global-asc">Menor Puntaje</option>
+                <option value="nombre-asc">Nombre (A-Z)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-4 pt-4 border-t border-slate-100 text-xs text-slate-500">
             <div class="flex items-center gap-2">
-              <span class="px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider bg-blue-500/30 text-blue-200 border border-blue-400/30 rounded-full">Reporte Oficial ICFES 2026</span>
-              <span class="text-xs text-slate-300">DANE: 183001001598 | Código: 019158</span>
+              <span id="filtered-count" class="font-bold text-slate-700">Mostrando 79 estudiantes</span>
+              <span class="text-slate-300">•</span>
+              <span class="text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">🔍 Clic en la foto para verla ampliada · Botón "📷 Foto" para cambiar</span>
             </div>
-            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white mt-1">
-              I.E. Juan Bautista Migani <span class="text-amber-400 font-semibold text-lg">· Jornada Mañana</span>
-            </h1>
-            <p class="text-sm text-slate-300">Directorio Visual con Fotos Reales, Cuadro de Honor y Comparativa Histórica 2025 - 2026</p>
+            <div class="flex items-center gap-3">
+              <button onclick="resetFilters()" class="text-blue-600 hover:underline font-semibold">Restablecer Filtros</button>
+            </div>
           </div>
         </div>
 
-        <!-- Acciones rápidas -->
-        <div class="flex items-center gap-2.5">
-          <a href="analisis_detallado_icfes_2026.xlsx" download="analisis_detallado_icfes_2026.xlsx" class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition shadow-lg shadow-emerald-900/30">
-            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-            <span>Exportar Excel</span>
-          </a>
-          <button onclick="window.print()" class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-semibold transition">
-            <i data-lucide="printer" class="w-4 h-4"></i>
-            <span>Imprimir</span>
+        <div id="students-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+        <div id="no-results" class="hidden text-center py-16 bg-white rounded-2xl border border-slate-200">
+          <i data-lucide="search-x" class="w-12 h-12 text-slate-400 mx-auto mb-3"></i>
+          <p class="text-base font-semibold text-slate-700">No se encontraron estudiantes con esos criterios</p>
+          <p class="text-sm text-slate-400 mt-1">Prueba cambiando los filtros o el texto de búsqueda</p>
+        </div>
+      </section>
+
+      <!-- ==================== PESTAÑA 2: CUADRO DE HONOR (TOP 10) ==================== -->
+      <section id="tab-honor" class="tab-content hidden space-y-8">
+        
+        <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-2xl relative overflow-hidden">
+          <div class="absolute -right-16 -top-16 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="absolute -left-16 -bottom-16 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="text-center max-w-2xl mx-auto mb-10">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30 text-xs font-bold uppercase tracking-wider mb-2">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+              <span>Salón de la Excelencia Académica</span>
+            </div>
+            <h2 class="text-3xl font-extrabold text-white">Podio Institucional Saber 11</h2>
+            <p class="text-sm text-slate-300 mt-2">Los mejores resultados globales de la promoción 2026 de la I.E. Juan Bautista Migani</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end max-w-4xl mx-auto pt-6">
+            
+            <!-- 2do Lugar (Plata) -->
+            <div class="order-2 md:order-1 bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center flex flex-col items-center hover:scale-105 transition transform">
+              <div class="relative mb-3">
+                <div id="podium-photo-2" onclick="openPhotoLightbox(1)" class="w-24 h-24 rounded-2xl overflow-hidden shadow-lg border-2 border-white cursor-pointer group" title="Clic para ver foto grande"></div>
+                <div class="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-slate-200 text-slate-800 font-black text-sm flex items-center justify-center border-2 border-slate-700 shadow">🥈 2°</div>
+              </div>
+              <h3 class="font-bold text-lg text-white">Manuela Portilla</h3>
+              <span class="text-xs text-blue-300 font-medium">Salón 11-1</span>
+              <div class="mt-4 bg-white/10 px-4 py-2 rounded-xl border border-white/10">
+                <span class="text-2xl font-black text-amber-300">350</span>
+                <span class="text-xs text-slate-300 block">Puntaje Global</span>
+              </div>
+              <div class="mt-3 text-xs text-slate-300 space-y-1">
+                <p>Lectura: <span class="text-emerald-400 font-bold">74</span> · Sociales: <span class="text-emerald-400 font-bold">73</span></p>
+                <p>Inglés: <span class="text-emerald-400 font-bold">75 (B1)</span></p>
+              </div>
+              <button onclick="openModal(1)" class="mt-4 text-xs font-semibold text-amber-300 hover:underline">Ver Ficha Completa →</button>
+            </div>
+
+            <!-- 1er Lugar (Oro) -->
+            <div class="order-1 md:order-2 bg-gradient-to-b from-amber-500/20 to-white/10 backdrop-blur-md rounded-3xl p-8 border-2 border-amber-400/60 text-center flex flex-col items-center shadow-2xl hover:scale-105 transition transform -translate-y-4">
+              <div class="relative mb-4">
+                <div id="podium-photo-1" onclick="openPhotoLightbox(0)" class="w-32 h-32 rounded-3xl overflow-hidden shadow-xl border-4 border-amber-300 cursor-pointer group" title="Clic para ver foto grande"></div>
+                <div class="absolute -top-4 -right-4 w-11 h-11 rounded-full bg-amber-400 text-slate-950 font-black text-lg flex items-center justify-center border-2 border-white shadow-xl animate-bounce">👑 1°</div>
+              </div>
+              <span class="px-3 py-1 rounded-full bg-amber-400 text-slate-950 text-xs font-black uppercase tracking-wider">Récord Institucional (404)</span>
+              <h3 class="font-extrabold text-xl text-white mt-2">Jeremy Joel Moreno</h3>
+              <span class="text-xs text-amber-300 font-semibold">Salón 11-3 · Top 1% Colombia</span>
+              <div class="mt-4 bg-amber-400/20 border border-amber-400/40 px-6 py-3 rounded-2xl w-full">
+                <span class="text-4xl font-black text-amber-300">404</span>
+                <span class="text-xs text-amber-200 font-medium block">Puntaje Histórico</span>
+              </div>
+              <div class="mt-4 text-xs text-slate-200 space-y-1 w-full bg-white/5 p-3 rounded-xl">
+                <p>Lectura: <span class="text-amber-300 font-black">100/100</span> · Inglés: <span class="text-amber-300 font-black">100/100</span></p>
+                <p>Ciencias: <span class="text-emerald-300 font-bold">75</span> · Matemáticas: <span class="text-emerald-300 font-bold">72</span></p>
+              </div>
+              <button onclick="openModal(0)" class="mt-4 text-xs font-bold text-amber-300 hover:text-amber-200 hover:underline">Ver Ficha Completa →</button>
+            </div>
+
+            <!-- 3er Lugar (Bronce) -->
+            <div class="order-3 bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center flex flex-col items-center hover:scale-105 transition transform">
+              <div class="relative mb-3">
+                <div id="podium-photo-3" onclick="openPhotoLightbox(2)" class="w-24 h-24 rounded-2xl overflow-hidden shadow-lg border-2 border-white cursor-pointer group" title="Clic para ver foto grande"></div>
+                <div class="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-amber-700 text-white font-black text-sm flex items-center justify-center border-2 border-amber-400 shadow">🥉 3°</div>
+              </div>
+              <h3 class="font-bold text-lg text-white">Juan Angel Guerrero</h3>
+              <span class="text-xs text-blue-300 font-medium">Salón 11-2</span>
+              <div class="mt-4 bg-white/10 px-4 py-2 rounded-xl border border-white/10">
+                <span class="text-2xl font-black text-amber-300">338</span>
+                <span class="text-xs text-slate-300 block">Puntaje Global</span>
+              </div>
+              <div class="mt-3 text-xs text-slate-300 space-y-1">
+                <p>Inglés: <span class="text-emerald-400 font-bold">83 (B+)</span> · Matemáticas: <span class="text-emerald-400 font-bold">69</span></p>
+                <p>Ciencias: <span class="text-emerald-400 font-bold">66</span> · Sociales: <span class="text-emerald-400 font-bold">65</span></p>
+              </div>
+              <button onclick="openModal(2)" class="mt-4 text-xs font-semibold text-amber-300 hover:underline">Ver Ficha Completa →</button>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <i data-lucide="medal" class="w-5 h-5 text-amber-500"></i>
+            <span>Listado Oficial del Top 10 Institucional con Fotos</span>
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr class="border-b border-slate-200 text-xs font-bold text-slate-500 uppercase bg-slate-50">
+                  <th class="py-3 px-4">Puesto</th>
+                  <th class="py-3 px-4">Estudiante</th>
+                  <th class="py-3 px-4">Salón</th>
+                  <th class="py-3 px-4 text-center">Puntaje Global</th>
+                  <th class="py-3 px-4 text-center">Lectura</th>
+                  <th class="py-3 px-4 text-center">Matemáticas</th>
+                  <th class="py-3 px-4 text-center">Sociales</th>
+                  <th class="py-3 px-4 text-center">Ciencias</th>
+                  <th class="py-3 px-4 text-center">Inglés</th>
+                  <th class="py-3 px-4 text-right">Acción</th>
+                </tr>
+              </thead>
+              <tbody id="top10-table-body" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <i data-lucide="award" class="w-5 h-5 text-indigo-500"></i>
+            <span>Líderes por Cada Asignatura</span>
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div class="p-4 rounded-xl bg-blue-50/60 border border-blue-200">
+              <span class="text-xs font-bold text-blue-700 uppercase">Lectura Crítica</span>
+              <p class="text-2xl font-black text-blue-900 mt-1">100 <span class="text-xs font-normal">pts</span></p>
+              <p class="text-sm font-bold text-slate-800 mt-2">Jeremy Joel Moreno</p>
+              <p class="text-xs text-slate-500">11-3 · Decil 100</p>
+            </div>
+            <div class="p-4 rounded-xl bg-emerald-50/60 border border-emerald-200">
+              <span class="text-xs font-bold text-emerald-700 uppercase">Matemáticas</span>
+              <p class="text-2xl font-black text-emerald-900 mt-1">72 <span class="text-xs font-normal">pts</span></p>
+              <p class="text-sm font-bold text-slate-800 mt-2">Jeremy Joel Moreno</p>
+              <p class="text-xs text-slate-500">11-3 · Decil 96</p>
+            </div>
+            <div class="p-4 rounded-xl bg-amber-50/60 border border-amber-200">
+              <span class="text-xs font-bold text-amber-700 uppercase">Sociales</span>
+              <p class="text-2xl font-black text-amber-900 mt-1">73 <span class="text-xs font-normal">pts</span></p>
+              <p class="text-sm font-bold text-slate-800 mt-2">Manuela Portilla</p>
+              <p class="text-xs text-slate-500">11-1 · Decil 99</p>
+            </div>
+            <div class="p-4 rounded-xl bg-teal-50/60 border border-teal-200">
+              <span class="text-xs font-bold text-teal-700 uppercase">Ciencias Nat.</span>
+              <p class="text-2xl font-black text-teal-900 mt-1">75 <span class="text-xs font-normal">pts</span></p>
+              <p class="text-sm font-bold text-slate-800 mt-2">Jeremy Joel Moreno</p>
+              <p class="text-xs text-slate-500">11-3 · Decil 100</p>
+            </div>
+            <div class="p-4 rounded-xl bg-purple-50/60 border border-purple-200">
+              <span class="text-xs font-bold text-purple-700 uppercase">Inglés</span>
+              <p class="text-2xl font-black text-purple-900 mt-1">100 <span class="text-xs font-normal">pts</span></p>
+              <p class="text-sm font-bold text-slate-800 mt-2">Jeremy Joel Moreno</p>
+              <p class="text-xs text-slate-500">11-3 · Nivel B+</p>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================== PESTAÑA 3: COMPARATIVA HISTÓRICA 2025 vs 2026 ==================== -->
+      <section id="tab-historico" class="tab-content hidden space-y-8">
+        
+        <div class="bg-gradient-to-r from-slate-900 to-indigo-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl">
+          <div class="max-w-3xl">
+            <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-xs font-bold uppercase tracking-wider">Evolución Histórica</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-2">Comparativa de Rendimiento Saber 11: 2025 vs 2026</h2>
+            <p class="text-sm text-slate-300 mt-1">Evaluación de tendencias de calidad académica, variaciones por asignatura y avance institucional.</p>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-white/10">
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-4">
+              <p class="text-xs text-slate-400">Puntaje Global Promedio</p>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span class="text-2xl font-black text-white">254.4</span>
+                <span class="text-xs text-rose-400 font-bold">-4.96 pts</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1">2025: 259.39 | 2026: 254.43</p>
+            </div>
+
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-4">
+              <p class="text-xs text-slate-400">Puntaje Máximo Colegio</p>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span class="text-2xl font-black text-amber-400">404</span>
+                <span class="text-xs text-emerald-400 font-bold">+34 pts ★</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1">2025: 370 | 2026: 404</p>
+            </div>
+
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-4">
+              <p class="text-xs text-slate-400">Estudiantes > 300 Pts</p>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span class="text-2xl font-black text-white">10</span>
+                <span class="text-xs text-rose-400 font-bold">-9 alumnos</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1">2025: 19 (22%) | 2026: 10 (13%)</p>
+            </div>
+
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-4">
+              <p class="text-xs text-slate-400">Población Evaluada</p>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span class="text-2xl font-black text-white">79</span>
+                <span class="text-xs text-slate-400">-6 alumnos</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1">2025: 85 | 2026: 79</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+            <div>
+              <h3 class="text-base font-bold text-slate-800">Comparativa por Asignatura: Promedios 2025 vs 2026</h3>
+              <p class="text-xs text-slate-400">Escala de 0 a 100 puntos</p>
+            </div>
+            <div class="flex items-center gap-4 text-xs font-semibold">
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-slate-400"></span> Año 2025</span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-blue-600"></span> Año 2026</span>
+            </div>
+          </div>
+          <div class="h-72">
+            <canvas id="chart-historico"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <h3 class="text-base font-bold text-slate-800 mb-4">Tabla de Variaciones Históricas por Área</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="border-b border-slate-200 text-xs text-slate-500 uppercase bg-slate-50">
+                  <th class="py-3 px-4">Asignatura</th>
+                  <th class="py-3 px-4 text-center">Promedio 2025</th>
+                  <th class="py-3 px-4 text-center font-bold">Promedio 2026</th>
+                  <th class="py-3 px-4 text-center">Variación</th>
+                  <th class="py-3 px-4">Diagnóstico y Plan de Acción Curricular</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr class="hover:bg-slate-50">
+                  <td class="py-3.5 px-4 font-bold text-slate-900">Lectura Crítica</td>
+                  <td class="py-3.5 px-4 text-center text-slate-600">54.08</td>
+                  <td class="py-3.5 px-4 text-center font-bold text-slate-900">53.49</td>
+                  <td class="py-3.5 px-4 text-center font-semibold text-slate-500">-0.59 pts</td>
+                  <td class="py-3.5 px-4 text-xs text-slate-600">Comportamiento estable. Mantiene la base cualitativa más sólida (0% en Nivel 1).</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="py-3.5 px-4 font-bold text-slate-900">Matemáticas</td>
+                  <td class="py-3.5 px-4 text-center text-slate-600">51.94</td>
+                  <td class="py-3.5 px-4 text-center font-bold text-slate-900">50.51</td>
+                  <td class="py-3.5 px-4 text-center font-semibold text-rose-600">-1.43 pts</td>
+                  <td class="py-3.5 px-4 text-xs text-slate-600">Retroceso moderado impulsado por la brecha de género (-6.04 pts en mujeres). Reforzar resolución de problemas.</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="py-3.5 px-4 font-bold text-slate-900">Sociales y Ciudadanas</td>
+                  <td class="py-3.5 px-4 text-center text-slate-600">50.35</td>
+                  <td class="py-3.5 px-4 text-center font-bold text-slate-900">49.05</td>
+                  <td class="py-3.5 px-4 text-center font-semibold text-rose-600">-1.30 pts</td>
+                  <td class="py-3.5 px-4 text-xs text-rose-700 font-semibold">🔴 Área más vulnerable. Pasó de 50.35 a 49.05 y concentra un 75.9% en Niveles 1 y 2.</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="py-3.5 px-4 font-bold text-slate-900">Ciencias Naturales</td>
+                  <td class="py-3.5 px-4 text-center text-slate-600">51.13</td>
+                  <td class="py-3.5 px-4 text-center font-bold text-slate-900">50.04</td>
+                  <td class="py-3.5 px-4 text-center font-semibold text-slate-500">-1.09 pts</td>
+                  <td class="py-3.5 px-4 text-xs text-slate-600">Ligero descenso. Urge fortalecer indagación experimental y lectura de gráficas de laboratorio.</td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="py-3.5 px-4 font-bold text-slate-900">Inglés</td>
+                  <td class="py-3.5 px-4 text-center text-slate-600">52.04</td>
+                  <td class="py-3.5 px-4 text-center font-bold text-emerald-600">52.23</td>
+                  <td class="py-3.5 px-4 text-center font-semibold text-emerald-600">+0.19 pts</td>
+                  <td class="py-3.5 px-4 text-xs text-emerald-700">🟢 Única asignatura que mostró incremento positivo frente a 2025.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================== PESTAÑA 4: ANALÍTICA Y GRÁFICOS ==================== -->
+      <section id="tab-analitica" class="tab-content hidden space-y-8">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-slate-800 text-base mb-1">Promedios Institucionales 2026 por Área</h3>
+            <p class="text-xs text-slate-400 mb-4">Escala de 0 a 100 puntos</p>
+            <div class="h-64"><canvas id="chart-areas"></canvas></div>
+          </div>
+
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-slate-800 text-base mb-1">Comparativo por Salones (11-1 vs 11-2 vs 11-3)</h3>
+            <p class="text-xs text-slate-400 mb-4">Puntaje Global Promedio por grupo</p>
+            <div class="h-64"><canvas id="chart-grupos"></canvas></div>
+          </div>
+
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-slate-800 text-base mb-1">Distribución de Niveles de Desempeño (%)</h3>
+            <p class="text-xs text-slate-400 mb-4">Porcentaje en Nivel Bajo (1 / A-) vs Niveles Medios y Altos</p>
+            <div class="h-64"><canvas id="chart-niveles"></canvas></div>
+          </div>
+
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-slate-800 text-base mb-1">Brecha por Género (Hombres vs Mujeres)</h3>
+            <p class="text-xs text-slate-400 mb-4">Comparativa de puntaje promedio en cada asignatura</p>
+            <div class="h-64"><canvas id="chart-genero"></canvas></div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <h3 class="font-bold text-slate-800 text-base mb-4">Matriz Comparativa entre Salones (2026)</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="border-b border-slate-200 text-xs text-slate-500 uppercase bg-slate-50">
+                  <th class="py-3 px-4">Salón</th>
+                  <th class="py-3 px-4 text-center">Evaluados</th>
+                  <th class="py-3 px-4 text-center font-bold">Global Promedio</th>
+                  <th class="py-3 px-4 text-center">Desviación</th>
+                  <th class="py-3 px-4 text-center">Lectura</th>
+                  <th class="py-3 px-4 text-center">Matemáticas</th>
+                  <th class="py-3 px-4 text-center">Sociales</th>
+                  <th class="py-3 px-4 text-center">Ciencias</th>
+                  <th class="py-3 px-4 text-center">Inglés</th>
+                  <th class="py-3 px-4">Perfil del Grupo</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr class="hover:bg-slate-50">
+                  <td class="py-3.5 px-4 font-bold text-blue-700">Salón 11-1</td>
+                  <td class="py-3.5 px-4 text-center">29</td>
+                  <td class="py-3.5 px-4 text-center font-black text-emerald-600 text-base">263.28</td>
+                  <td class="py-3.5 px-4 text-center text-slate-500">39.89</td>
+                  <td class="py-3.5 px-4 text-center font-semibold">54.31</td>
+                  <td class="py-3.5 px-4 text-center font-semibold">51.76</td>
+                  <td class="py-3.5 px-4 text-center font-semibold">50.62</td>
+                  <td class="py-3.5 px-4 text-center font-semibold">51.55</td>
+                  <td class="py-3.5 px-4 text-center font-semibold">54.76</td>
+                  <td class="py-3.5 px-4 text-xs text-emerald-700"><span class="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 font-medium">Líder Institucional</span></td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="py-3.5 px-4 font-bold text-indigo-700">Salón 11-2</td>
+                  <td class="py-3.5 px-4 text-center">25</td>
+                  <td class="py-3.5 px-4 text-center font-black text-slate-700 text-base">249.88</td>
+                  <td class="py-3.5 px-4 text-center text-slate-500">31.87</td>
+                  <td class="py-3.5 px-4 text-center">52.44</td>
+                  <td class="py-3.5 px-4 text-center">49.28</td>
+                  <td class="py-3.5 px-4 text-center">48.04</td>
+                  <td class="py-3.5 px-4 text-center">48.36</td>
+                  <td class="py-3.5 px-4 text-center">51.80</td>
+                  <td class="py-3.5 px-4 text-xs text-blue-700"><span class="px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 font-medium">Mayor Homogeneidad</span></td>
+                </tr>
+                <tr class="hover:bg-slate-50">
+                  <td class="py-3.5 px-4 font-bold text-amber-700">Salón 11-3</td>
+                  <td class="py-3.5 px-4 text-center">25</td>
+                  <td class="py-3.5 px-4 text-center font-black text-slate-700 text-base">248.72</td>
+                  <td class="py-3.5 px-4 text-center text-slate-500">51.93</td>
+                  <td class="py-3.5 px-4 text-center">54.16</td>
+                  <td class="py-3.5 px-4 text-center">50.76</td>
+                  <td class="py-3.5 px-4 text-center">48.24</td>
+                  <td class="py-3.5 px-4 text-center">51.04</td>
+                  <td class="py-3.5 px-4 text-center">49.72</td>
+                  <td class="py-3.5 px-4 text-xs text-amber-700"><span class="px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 font-medium">Alta Dispersión (Top #1 + Rezago)</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================== PESTAÑA 5: PLAN DE REFUERZO ==================== -->
+      <section id="tab-refuerzo" class="tab-content hidden space-y-6">
+        
+        <div class="bg-rose-50 border border-rose-200 rounded-2xl p-6 text-rose-950">
+          <div class="flex items-start gap-4">
+            <div class="p-3 bg-rose-100 rounded-xl text-rose-600">
+              <i data-lucide="alert-octagon" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-rose-900">Alerta Temprana: Plan de Tutoría y Acompañamiento Prioritario</h3>
+              <p class="text-sm text-rose-800 mt-1">
+                Se han detectado <strong>17 estudiantes</strong> que obtuvieron un Puntaje Global inferior a 220 o que acumulan 2 o más asignaturas en Nivel 1. Se sugiere citación de orientación escolar y plan de nivelación focalizado en <strong>Sociales y Ciudadanas</strong> y <strong>Ciencias Naturales</strong>.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <h3 class="font-bold text-slate-800 text-base mb-4">Listado de Estudiantes en Refuerzo Prioritario</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="border-b border-slate-200 text-xs text-slate-500 uppercase bg-slate-50">
+                  <th class="py-3 px-4">Estudiante</th>
+                  <th class="py-3 px-4">Salón</th>
+                  <th class="py-3 px-4 text-center">Puntaje Global</th>
+                  <th class="py-3 px-4 text-center">Lectura</th>
+                  <th class="py-3 px-4 text-center">Matemáticas</th>
+                  <th class="py-3 px-4 text-center">Sociales</th>
+                  <th class="py-3 px-4 text-center">Ciencias</th>
+                  <th class="py-3 px-4 text-center">Inglés</th>
+                  <th class="py-3 px-4">Materias Críticas</th>
+                  <th class="py-3 px-4 text-right">Ficha</th>
+                </tr>
+              </thead>
+              <tbody id="refuerzo-table-body" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================== PESTAÑA 6: NO EVALUADOS ==================== -->
+      <section id="tab-ausentes" class="tab-content hidden space-y-6">
+        
+        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-amber-950">
+          <div class="flex items-start gap-4">
+            <div class="p-3 bg-amber-100 rounded-xl text-amber-700">
+              <i data-lucide="info" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-amber-900">Control de Matrícula SIMAT (11 Estudiantes Sin Registro)</h3>
+              <p class="text-sm text-amber-800 mt-1">
+                Estos 11 alumnos figuran matriculados en los grupos 11-1, 11-2 y 11-3 pero no presentan puntaje en la sábana descargada del ICFES. Se muestran con sus fotos de matrícula para verificación y citación.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="border-b border-slate-200 text-xs text-slate-500 uppercase bg-slate-50">
+                  <th class="py-3 px-4">Estudiante</th>
+                  <th class="py-3 px-4">Salón</th>
+                  <th class="py-3 px-4">Género</th>
+                  <th class="py-3 px-4">Documento</th>
+                  <th class="py-3 px-4">Teléfono</th>
+                  <th class="py-3 px-4">Estado</th>
+                </tr>
+              </thead>
+              <tbody id="ausentes-table-body" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- ==================== FOOTER INSTITUCIONAL ==================== -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-12 no-print">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+        <div class="flex items-center gap-3">
+          <img src="fotos/logo.png" alt="Logo" class="w-8 h-8 object-contain">
+          <div>
+            <p class="font-bold text-slate-800">Institución Educativa Juan Bautista Migani</p>
+            <p class="text-slate-400">Florencia, Caquetá · Plataforma Oficial de Análisis Saber 11</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 font-bold border border-amber-200">Uso Exclusivo Docentes y Directivos</span>
+          <button onclick="openCreditsModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold border border-slate-200 transition">
+            <i data-lucide="award" class="w-3.5 h-3.5 text-amber-500"></i>
+            <span>Créditos del Software</span>
           </button>
-          <button onclick="openCreditsModal()" class="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 text-sm font-bold transition shadow-sm" title="Créditos del Software">
-            <i data-lucide="info" class="w-4 h-4"></i>
-            <span>Créditos</span>
-          </button>
         </div>
       </div>
+    </footer>
 
-      <!-- KPI BANNER -->
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-6 pt-6 border-t border-white/10">
-        <div class="bg-white/5 border border-white/10 rounded-xl p-3">
-          <p class="text-xs text-slate-400 font-medium">Promedio 2026</p>
-          <div class="flex items-baseline gap-1 mt-1">
-            <span class="text-2xl font-bold text-white">254.4</span>
-            <span class="text-xs text-rose-300/80 font-semibold">(-4.9 vs 2025)</span>
-          </div>
-        </div>
-        <div class="bg-white/5 border border-white/10 rounded-xl p-3">
-          <p class="text-xs text-slate-400 font-medium">Puntaje Récord Máximo</p>
-          <div class="flex items-baseline gap-1 mt-1">
-            <span class="text-2xl font-bold text-amber-400">404</span>
-            <span class="text-xs text-emerald-300/90 font-semibold">(+34 récord histórico)</span>
-          </div>
-        </div>
-        <div class="bg-white/5 border border-white/10 rounded-xl p-3">
-          <p class="text-xs text-slate-400 font-medium">Evaluados 2026</p>
-          <div class="flex items-baseline gap-1 mt-1">
-            <span class="text-2xl font-bold text-white">79</span>
-            <span class="text-xs text-slate-400">alumnos</span>
-          </div>
-        </div>
-        <div class="bg-white/5 border border-white/10 rounded-xl p-3">
-          <p class="text-xs text-slate-400 font-medium">Fotos Oficiales</p>
-          <div class="flex items-baseline gap-1 mt-1">
-            <span class="text-2xl font-bold text-emerald-400">75</span>
-            <span class="text-xs text-emerald-300/80 font-medium">/ 79 cargadas</span>
-          </div>
-        </div>
-        <div class="bg-white/5 border border-white/10 rounded-xl p-3 col-span-2 sm:col-span-1">
-          <p class="text-xs text-slate-400 font-medium">Sobresalientes (>300)</p>
-          <div class="flex items-baseline gap-1 mt-1">
-            <span class="text-2xl font-bold text-amber-400">10</span>
-            <span class="text-xs text-slate-300">alumnos (12.7%)</span>
-          </div>
-        </div>
-      </div>
+    <!-- ==================== BOTÓN FLOTANTE DE CRÉDITOS ==================== -->
+    <div class="fixed bottom-4 right-4 z-40 no-print flex items-center gap-2">
+      <button onclick="openCreditsModal()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-slate-900/90 hover:bg-slate-900 text-white text-xs font-bold shadow-xl border border-white/20 backdrop-blur-md transition transform hover:scale-105" title="Ver Créditos del Software">
+        <i data-lucide="info" class="w-3.5 h-3.5 text-amber-400"></i>
+        <span>Créditos</span>
+      </button>
+      <button onclick="logout()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-rose-600/90 hover:bg-rose-600 text-white text-xs font-bold shadow-xl border border-white/20 backdrop-blur-md transition" title="Bloquear Acceso">
+        <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+      </button>
     </div>
-  </header>
 
-  <!-- NAVEGACIÓN DE PESTAÑAS -->
-  <nav class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm no-print">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex space-x-1 sm:space-x-4 overflow-x-auto py-2.5 custom-scroll">
-        <button onclick="switchTab('directorio')" id="tab-btn-directorio" class="tab-btn inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition text-blue-700 bg-blue-50 border border-blue-200">
-          <i data-lucide="users" class="w-4 h-4"></i>
-          <span>Directorio con Fotos</span>
-          <span class="px-2 py-0.5 text-xs bg-blue-200 text-blue-800 rounded-full font-bold">79</span>
-        </button>
-        <button onclick="switchTab('honor')" id="tab-btn-honor" class="tab-btn inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition text-slate-600 hover:text-slate-900 hover:bg-slate-100">
-          <i data-lucide="trophy" class="w-4 h-4 text-amber-500"></i>
-          <span>Cuadro de Honor (Top 10)</span>
-        </button>
-        <button onclick="switchTab('historico')" id="tab-btn-historico" class="tab-btn inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition text-slate-600 hover:text-slate-900 hover:bg-slate-100">
-          <i data-lucide="history" class="w-4 h-4 text-emerald-500"></i>
-          <span>Comparativa 2025 vs 2026</span>
-          <span class="px-2 py-0.5 text-xs bg-emerald-100 text-emerald-700 rounded-full font-bold">Nuevo</span>
-        </button>
-        <button onclick="switchTab('analitica')" id="tab-btn-analitica" class="tab-btn inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition text-slate-600 hover:text-slate-900 hover:bg-slate-100">
-          <i data-lucide="bar-chart-3" class="w-4 h-4 text-indigo-500"></i>
-          <span>Gráficos y Salones</span>
-        </button>
-        <button onclick="switchTab('refuerzo')" id="tab-btn-refuerzo" class="tab-btn inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition text-slate-600 hover:text-slate-900 hover:bg-slate-100">
-          <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500"></i>
-          <span>Plan de Refuerzo</span>
-          <span class="px-2 py-0.5 text-xs bg-rose-100 text-rose-700 rounded-full font-bold">17</span>
-        </button>
-        <button onclick="switchTab('ausentes')" id="tab-btn-ausentes" class="tab-btn inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition text-slate-600 hover:text-slate-900 hover:bg-slate-100">
-          <i data-lucide="user-x" class="w-4 h-4 text-slate-400"></i>
-          <span>No Evaluados (SIMAT)</span>
-          <span class="px-2 py-0.5 text-xs bg-slate-200 text-slate-700 rounded-full font-bold">11</span>
-        </button>
-      </div>
-    </div>
-  </nav>
-
-  <!-- CONTENEDOR PRINCIPAL -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-    <!-- ==================== PESTAÑA 1: DIRECTORIO VISUAL CON FOTOS ==================== -->
-    <section id="tab-directorio" class="tab-content space-y-6">
-      
-      <!-- BARRA DE CONTROLES: BÚSQUEDA Y FILTROS -->
-      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-          <!-- Buscador -->
-          <div class="md:col-span-5 relative">
-            <i data-lucide="search" class="w-5 h-5 absolute left-3.5 top-3 text-slate-400"></i>
-            <input type="text" id="search-input" oninput="applyFilters()" placeholder="Buscar por nombre, documento o registro..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm transition" />
-          </div>
-
-          <!-- Filtro Grupo -->
-          <div class="md:col-span-2">
-            <select id="filter-group" onchange="applyFilters()" class="w-full py-2.5 px-3 rounded-xl border border-slate-300 text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none">
-              <option value="ALL">Todos los Salones</option>
-              <option value="11-1">Salón 11-1 (29)</option>
-              <option value="11-2">Salón 11-2 (25)</option>
-              <option value="11-3">Salón 11-3 (25)</option>
-            </select>
-          </div>
-
-          <!-- Filtro Desempeño -->
-          <div class="md:col-span-3">
-            <select id="filter-tier" onchange="applyFilters()" class="w-full py-2.5 px-3 rounded-xl border border-slate-300 text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none">
-              <option value="ALL">Todo Nivel de Puntaje</option>
-              <option value="TOP10">Top 10 Institucional (≥300)</option>
-              <option value="SUPERIOR">Superior (280 - 299)</option>
-              <option value="MEDIO">Medio-Alto (240 - 279)</option>
-              <option value="BASICO">Básico (220 - 239)</option>
-              <option value="ALERTA">Refuerzo Prioritario (<220)</option>
-            </select>
-          </div>
-
-          <!-- Ordenamiento -->
-          <div class="md:col-span-2">
-            <select id="sort-by" onchange="applyFilters()" class="w-full py-2.5 px-3 rounded-xl border border-slate-300 text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none font-medium">
-              <option value="puesto-asc">Puesto (1° a 79°)</option>
-              <option value="global-desc">Mayor Puntaje</option>
-              <option value="global-asc">Menor Puntaje</option>
-              <option value="nombre-asc">Nombre (A-Z)</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Indicador de resultados activos -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-4 pt-4 border-t border-slate-100 text-xs text-slate-500">
-          <div class="flex items-center gap-2">
-            <span id="filtered-count" class="font-bold text-slate-700">Mostrando 79 estudiantes</span>
-            <span class="text-slate-300">•</span>
-            <span class="text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">🔍 Haz clic en la foto para verla ampliada · Usa el botón "📷 Foto" para cambiarla</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <button onclick="resetFilters()" class="text-blue-600 hover:underline font-semibold">Restablecer Filtros</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- GRID DE TARJETAS DE ESTUDIANTES CON FOTO -->
-      <div id="students-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Renderizado dinámico vía JavaScript -->
-      </div>
-
-      <div id="no-results" class="hidden text-center py-16 bg-white rounded-2xl border border-slate-200">
-        <i data-lucide="search-x" class="w-12 h-12 text-slate-400 mx-auto mb-3"></i>
-        <p class="text-base font-semibold text-slate-700">No se encontraron estudiantes con esos criterios</p>
-        <p class="text-sm text-slate-400 mt-1">Prueba cambiando los filtros o el texto de búsqueda</p>
-      </div>
-    </section>
-
-    <!-- ==================== PESTAÑA 2: CUADRO DE HONOR (TOP 10) ==================== -->
-    <section id="tab-honor" class="tab-content hidden space-y-8">
-      
-      <!-- PODIO DE HONOR OLÍMPICO CON FOTOS REALES -->
-      <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-2xl relative overflow-hidden">
-        <div class="absolute -right-16 -top-16 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -left-16 -bottom-16 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-        <div class="text-center max-w-2xl mx-auto mb-10">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30 text-xs font-bold uppercase tracking-wider mb-2">
-            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-            <span>Salón de la Excelencia Académica</span>
-          </div>
-          <h2 class="text-3xl font-extrabold text-white">Podio Institucional Saber 11</h2>
-          <p class="text-sm text-slate-300 mt-2">Los mejores resultados globales de la promoción 2026 de la I.E. Juan Bautista Migani</p>
-        </div>
-
-        <!-- PODIO 3D -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end max-w-4xl mx-auto pt-6">
-          
-          <!-- 2do Lugar (Plata) -->
-          <div class="order-2 md:order-1 bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center flex flex-col items-center hover:scale-105 transition transform">
-            <div class="relative mb-3">
-              <div id="podium-photo-2" onclick="openPhotoLightbox(1)" class="w-24 h-24 rounded-2xl overflow-hidden shadow-lg border-2 border-white cursor-pointer group" title="Clic para ver foto grande">
-                <!-- Foto 2do lugar -->
-              </div>
-              <div class="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-slate-200 text-slate-800 font-black text-sm flex items-center justify-center border-2 border-slate-700 shadow">
-                🥈 2°
-              </div>
-            </div>
-            <h3 class="font-bold text-lg text-white">Manuela Portilla</h3>
-            <span class="text-xs text-blue-300 font-medium">Salón 11-1</span>
-            <div class="mt-4 bg-white/10 px-4 py-2 rounded-xl border border-white/10">
-              <span class="text-2xl font-black text-amber-300">350</span>
-              <span class="text-xs text-slate-300 block">Puntaje Global</span>
-            </div>
-            <div class="mt-3 text-xs text-slate-300 space-y-1">
-              <p>Lectura: <span class="text-emerald-400 font-bold">74</span> · Sociales: <span class="text-emerald-400 font-bold">73</span></p>
-              <p>Inglés: <span class="text-emerald-400 font-bold">75 (B1)</span></p>
-            </div>
-            <button onclick="openModal(1)" class="mt-4 text-xs font-semibold text-amber-300 hover:underline">Ver Ficha Completa →</button>
-          </div>
-
-          <!-- 1er Lugar (Oro) -->
-          <div class="order-1 md:order-2 bg-gradient-to-b from-amber-500/20 to-white/10 backdrop-blur-md rounded-3xl p-8 border-2 border-amber-400/60 text-center flex flex-col items-center shadow-2xl hover:scale-105 transition transform -translate-y-4">
-            <div class="relative mb-4">
-              <div id="podium-photo-1" onclick="openPhotoLightbox(0)" class="w-32 h-32 rounded-3xl overflow-hidden shadow-xl border-4 border-amber-300 cursor-pointer group" title="Clic para ver foto grande">
-                <!-- Foto 1er lugar -->
-              </div>
-              <div class="absolute -top-4 -right-4 w-11 h-11 rounded-full bg-amber-400 text-slate-950 font-black text-lg flex items-center justify-center border-2 border-white shadow-xl animate-bounce">
-                👑 1°
-              </div>
-            </div>
-            <span class="px-3 py-1 rounded-full bg-amber-400 text-slate-950 text-xs font-black uppercase tracking-wider">Récord Institucional (404)</span>
-            <h3 class="font-extrabold text-xl text-white mt-2">Jeremy Joel Moreno</h3>
-            <span class="text-xs text-amber-300 font-semibold">Salón 11-3 · Top 1% Colombia</span>
-            <div class="mt-4 bg-amber-400/20 border border-amber-400/40 px-6 py-3 rounded-2xl w-full">
-              <span class="text-4xl font-black text-amber-300">404</span>
-              <span class="text-xs text-amber-200 font-medium block">Puntaje Histórico</span>
-            </div>
-            <div class="mt-4 text-xs text-slate-200 space-y-1 w-full bg-white/5 p-3 rounded-xl">
-              <p>Lectura: <span class="text-amber-300 font-black">100/100</span> · Inglés: <span class="text-amber-300 font-black">100/100</span></p>
-              <p>Ciencias: <span class="text-emerald-300 font-bold">75</span> · Matemáticas: <span class="text-emerald-300 font-bold">72</span></p>
-            </div>
-            <button onclick="openModal(0)" class="mt-4 text-xs font-bold text-amber-300 hover:text-amber-200 hover:underline">Ver Ficha Completa →</button>
-          </div>
-
-          <!-- 3er Lugar (Bronce) -->
-          <div class="order-3 bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center flex flex-col items-center hover:scale-105 transition transform">
-            <div class="relative mb-3">
-              <div id="podium-photo-3" onclick="openPhotoLightbox(2)" class="w-24 h-24 rounded-2xl overflow-hidden shadow-lg border-2 border-white cursor-pointer group" title="Clic para ver foto grande">
-                <!-- Foto 3er lugar -->
-              </div>
-              <div class="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-amber-700 text-white font-black text-sm flex items-center justify-center border-2 border-amber-400 shadow">
-                🥉 3°
-              </div>
-            </div>
-            <h3 class="font-bold text-lg text-white">Juan Angel Guerrero</h3>
-            <span class="text-xs text-blue-300 font-medium">Salón 11-2</span>
-            <div class="mt-4 bg-white/10 px-4 py-2 rounded-xl border border-white/10">
-              <span class="text-2xl font-black text-amber-300">338</span>
-              <span class="text-xs text-slate-300 block">Puntaje Global</span>
-            </div>
-            <div class="mt-3 text-xs text-slate-300 space-y-1">
-              <p>Inglés: <span class="text-emerald-400 font-bold">83 (B+)</span> · Matemáticas: <span class="text-emerald-400 font-bold">69</span></p>
-              <p>Ciencias: <span class="text-emerald-400 font-bold">66</span> · Sociales: <span class="text-emerald-400 font-bold">65</span></p>
-            </div>
-            <button onclick="openModal(2)" class="mt-4 text-xs font-semibold text-amber-300 hover:underline">Ver Ficha Completa →</button>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- TABLA DEL TOP 10 INSTITUCIONAL -->
-      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-          <i data-lucide="medal" class="w-5 h-5 text-amber-500"></i>
-          <span>Listado Oficial del Top 10 Institucional con Fotos</span>
-        </h3>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr class="border-b border-slate-200 text-xs font-bold text-slate-500 uppercase bg-slate-50">
-                <th class="py-3 px-4">Puesto</th>
-                <th class="py-3 px-4">Estudiante</th>
-                <th class="py-3 px-4">Salón</th>
-                <th class="py-3 px-4 text-center">Puntaje Global</th>
-                <th class="py-3 px-4 text-center">Lectura</th>
-                <th class="py-3 px-4 text-center">Matemáticas</th>
-                <th class="py-3 px-4 text-center">Sociales</th>
-                <th class="py-3 px-4 text-center">Ciencias</th>
-                <th class="py-3 px-4 text-center">Inglés</th>
-                <th class="py-3 px-4 text-right">Acción</th>
-              </tr>
-            </thead>
-            <tbody id="top10-table-body" class="divide-y divide-slate-100">
-              <!-- Renderizado dinámico -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- MEJORES POR ÁREA -->
-      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-          <i data-lucide="award" class="w-5 h-5 text-indigo-500"></i>
-          <span>Líderes por Cada Asignatura</span>
-        </h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div class="p-4 rounded-xl bg-blue-50/60 border border-blue-200">
-            <span class="text-xs font-bold text-blue-700 uppercase">Lectura Crítica</span>
-            <p class="text-2xl font-black text-blue-900 mt-1">100 <span class="text-xs font-normal">pts</span></p>
-            <p class="text-sm font-bold text-slate-800 mt-2">Jeremy Joel Moreno</p>
-            <p class="text-xs text-slate-500">11-3 · Decil 100</p>
-          </div>
-          <div class="p-4 rounded-xl bg-emerald-50/60 border border-emerald-200">
-            <span class="text-xs font-bold text-emerald-700 uppercase">Matemáticas</span>
-            <p class="text-2xl font-black text-emerald-900 mt-1">72 <span class="text-xs font-normal">pts</span></p>
-            <p class="text-sm font-bold text-slate-800 mt-2">Jeremy Joel Moreno</p>
-            <p class="text-xs text-slate-500">11-3 · Decil 96</p>
-          </div>
-          <div class="p-4 rounded-xl bg-amber-50/60 border border-amber-200">
-            <span class="text-xs font-bold text-amber-700 uppercase">Sociales</span>
-            <p class="text-2xl font-black text-amber-900 mt-1">73 <span class="text-xs font-normal">pts</span></p>
-            <p class="text-sm font-bold text-slate-800 mt-2">Manuela Portilla</p>
-            <p class="text-xs text-slate-500">11-1 · Decil 99</p>
-          </div>
-          <div class="p-4 rounded-xl bg-teal-50/60 border border-teal-200">
-            <span class="text-xs font-bold text-teal-700 uppercase">Ciencias Nat.</span>
-            <p class="text-2xl font-black text-teal-900 mt-1">75 <span class="text-xs font-normal">pts</span></p>
-            <p class="text-sm font-bold text-slate-800 mt-2">Jeremy Joel Moreno</p>
-            <p class="text-xs text-slate-500">11-3 · Decil 100</p>
-          </div>
-          <div class="p-4 rounded-xl bg-purple-50/60 border border-purple-200">
-            <span class="text-xs font-bold text-purple-700 uppercase">Inglés</span>
-            <p class="text-2xl font-black text-purple-900 mt-1">100 <span class="text-xs font-normal">pts</span></p>
-            <p class="text-sm font-bold text-slate-800 mt-2">Jeremy Joel Moreno</p>
-            <p class="text-xs text-slate-500">11-3 · Nivel B+</p>
-          </div>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- ==================== PESTAÑA 3: COMPARATIVA HISTÓRICA 2025 vs 2026 ==================== -->
-    <section id="tab-historico" class="tab-content hidden space-y-8">
-      
-      <!-- BANNER COMPARATIVO -->
-      <div class="bg-gradient-to-r from-slate-900 to-indigo-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl">
-        <div class="max-w-3xl">
-          <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-xs font-bold uppercase tracking-wider">Evolución Histórica</span>
-          <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-2">Comparativa de Rendimiento Saber 11: 2025 vs 2026</h2>
-          <p class="text-sm text-slate-300 mt-1">Evaluación de tendencias de calidad académica, variaciones por asignatura y avance institucional.</p>
-        </div>
-
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-white/10">
-          <div class="bg-white/5 border border-white/10 rounded-2xl p-4">
-            <p class="text-xs text-slate-400">Puntaje Global Promedio</p>
-            <div class="flex items-baseline gap-2 mt-1">
-              <span class="text-2xl font-black text-white">254.4</span>
-              <span class="text-xs text-rose-400 font-bold">-4.96 pts</span>
-            </div>
-            <p class="text-[11px] text-slate-400 mt-1">2025: 259.39 | 2026: 254.43</p>
-          </div>
-
-          <div class="bg-white/5 border border-white/10 rounded-2xl p-4">
-            <p class="text-xs text-slate-400">Puntaje Máximo Colegio</p>
-            <div class="flex items-baseline gap-2 mt-1">
-              <span class="text-2xl font-black text-amber-400">404</span>
-              <span class="text-xs text-emerald-400 font-bold">+34 pts ★</span>
-            </div>
-            <p class="text-[11px] text-slate-400 mt-1">2025: 370 | 2026: 404</p>
-          </div>
-
-          <div class="bg-white/5 border border-white/10 rounded-2xl p-4">
-            <p class="text-xs text-slate-400">Estudiantes > 300 Pts</p>
-            <div class="flex items-baseline gap-2 mt-1">
-              <span class="text-2xl font-black text-white">10</span>
-              <span class="text-xs text-rose-400 font-bold">-9 alumnos</span>
-            </div>
-            <p class="text-[11px] text-slate-400 mt-1">2025: 19 (22%) | 2026: 10 (13%)</p>
-          </div>
-
-          <div class="bg-white/5 border border-white/10 rounded-2xl p-4">
-            <p class="text-xs text-slate-400">Población Evaluada</p>
-            <div class="flex items-baseline gap-2 mt-1">
-              <span class="text-2xl font-black text-white">79</span>
-              <span class="text-xs text-slate-400">-6 alumnos</span>
-            </div>
-            <p class="text-[11px] text-slate-400 mt-1">2025: 85 | 2026: 79</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- GRÁFICO COMPARATIVO POR MATERIA -->
-      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-          <div>
-            <h3 class="text-base font-bold text-slate-800">Comparativa por Asignatura: Promedios 2025 vs 2026</h3>
-            <p class="text-xs text-slate-400">Escala de 0 a 100 puntos</p>
-          </div>
-          <div class="flex items-center gap-4 text-xs font-semibold">
-            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-slate-400"></span> Año 2025</span>
-            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-blue-600"></span> Año 2026</span>
-          </div>
-        </div>
-        <div class="h-72">
-          <canvas id="chart-historico"></canvas>
-        </div>
-      </div>
-
-      <!-- TABLA DETALLADA DE VARIACIÓN -->
-      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-        <h3 class="text-base font-bold text-slate-800 mb-4">Tabla de Variaciones Históricas por Área</h3>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead>
-              <tr class="border-b border-slate-200 text-xs text-slate-500 uppercase bg-slate-50">
-                <th class="py-3 px-4">Asignatura</th>
-                <th class="py-3 px-4 text-center">Promedio 2025</th>
-                <th class="py-3 px-4 text-center font-bold">Promedio 2026</th>
-                <th class="py-3 px-4 text-center">Variación</th>
-                <th class="py-3 px-4">Diagnóstico y Plan de Acción Curricular</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              <tr class="hover:bg-slate-50">
-                <td class="py-3.5 px-4 font-bold text-slate-900">Lectura Crítica</td>
-                <td class="py-3.5 px-4 text-center text-slate-600">54.08</td>
-                <td class="py-3.5 px-4 text-center font-bold text-slate-900">53.49</td>
-                <td class="py-3.5 px-4 text-center font-semibold text-slate-500">-0.59 pts</td>
-                <td class="py-3.5 px-4 text-xs text-slate-600">Comportamiento estable. Mantiene la base cualitativa más sólida (0% en Nivel 1).</td>
-              </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="py-3.5 px-4 font-bold text-slate-900">Matemáticas</td>
-                <td class="py-3.5 px-4 text-center text-slate-600">51.94</td>
-                <td class="py-3.5 px-4 text-center font-bold text-slate-900">50.51</td>
-                <td class="py-3.5 px-4 text-center font-semibold text-rose-600">-1.43 pts</td>
-                <td class="py-3.5 px-4 text-xs text-slate-600">Retroceso moderado impulsado por la brecha de género (-6.04 pts en mujeres). Reforzar resolución de problemas.</td>
-              </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="py-3.5 px-4 font-bold text-slate-900">Sociales y Ciudadanas</td>
-                <td class="py-3.5 px-4 text-center text-slate-600">50.35</td>
-                <td class="py-3.5 px-4 text-center font-bold text-slate-900">49.05</td>
-                <td class="py-3.5 px-4 text-center font-semibold text-rose-600">-1.30 pts</td>
-                <td class="py-3.5 px-4 text-xs text-rose-700 font-semibold">🔴 Área más vulnerable. Pasó de 50.35 a 49.05 y concentra un 75.9% en Niveles 1 y 2.</td>
-              </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="py-3.5 px-4 font-bold text-slate-900">Ciencias Naturales</td>
-                <td class="py-3.5 px-4 text-center text-slate-600">51.13</td>
-                <td class="py-3.5 px-4 text-center font-bold text-slate-900">50.04</td>
-                <td class="py-3.5 px-4 text-center font-semibold text-slate-500">-1.09 pts</td>
-                <td class="py-3.5 px-4 text-xs text-slate-600">Ligero descenso. Urge fortalecer indagación experimental y lectura de gráficas de laboratorio.</td>
-              </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="py-3.5 px-4 font-bold text-slate-900">Inglés</td>
-                <td class="py-3.5 px-4 text-center text-slate-600">52.04</td>
-                <td class="py-3.5 px-4 text-center font-bold text-emerald-600">52.23</td>
-                <td class="py-3.5 px-4 text-center font-semibold text-emerald-600">+0.19 pts</td>
-                <td class="py-3.5 px-4 text-xs text-emerald-700">🟢 Única asignatura que mostró incremento positivo frente a 2025.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- ==================== PESTAÑA 4: ANALÍTICA Y GRÁFICOS ==================== -->
-    <section id="tab-analitica" class="tab-content hidden space-y-8">
-      
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Gráfico 1: Promedios por Materia -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 class="font-bold text-slate-800 text-base mb-1">Promedios Institucionales 2026 por Área</h3>
-          <p class="text-xs text-slate-400 mb-4">Escala de 0 a 100 puntos</p>
-          <div class="h-64">
-            <canvas id="chart-areas"></canvas>
-          </div>
-        </div>
-
-        <!-- Gráfico 2: Comparativo Salones -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 class="font-bold text-slate-800 text-base mb-1">Comparativo por Salones (11-1 vs 11-2 vs 11-3)</h3>
-          <p class="text-xs text-slate-400 mb-4">Puntaje Global Promedio por grupo</p>
-          <div class="h-64">
-            <canvas id="chart-grupos"></canvas>
-          </div>
-        </div>
-
-        <!-- Gráfico 3: Niveles de Desempeño -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 class="font-bold text-slate-800 text-base mb-1">Distribución de Niveles de Desempeño (%)</h3>
-          <p class="text-xs text-slate-400 mb-4">Porcentaje en Nivel Bajo (1 / A-) vs Niveles Medios y Altos</p>
-          <div class="h-64">
-            <canvas id="chart-niveles"></canvas>
-          </div>
-        </div>
-
-        <!-- Gráfico 4: Brecha de Género -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 class="font-bold text-slate-800 text-base mb-1">Brecha por Género (Hombres vs Mujeres)</h3>
-          <p class="text-xs text-slate-400 mb-4">Comparativa de puntaje promedio en cada asignatura</p>
-          <div class="h-64">
-            <canvas id="chart-genero"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <!-- TABLA DETALLADA DE SALONES -->
-      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-        <h3 class="font-bold text-slate-800 text-base mb-4">Matriz Comparativa entre Salones (2026)</h3>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead>
-              <tr class="border-b border-slate-200 text-xs text-slate-500 uppercase bg-slate-50">
-                <th class="py-3 px-4">Salón</th>
-                <th class="py-3 px-4 text-center">Evaluados</th>
-                <th class="py-3 px-4 text-center font-bold">Global Promedio</th>
-                <th class="py-3 px-4 text-center">Desviación</th>
-                <th class="py-3 px-4 text-center">Lectura</th>
-                <th class="py-3 px-4 text-center">Matemáticas</th>
-                <th class="py-3 px-4 text-center">Sociales</th>
-                <th class="py-3 px-4 text-center">Ciencias</th>
-                <th class="py-3 px-4 text-center">Inglés</th>
-                <th class="py-3 px-4">Perfil del Grupo</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              <tr class="hover:bg-slate-50">
-                <td class="py-3 px-4 font-bold text-blue-700">Salón 11-1</td>
-                <td class="py-3 px-4 text-center">29</td>
-                <td class="py-3 px-4 text-center font-black text-emerald-600 text-base">263.28</td>
-                <td class="py-3 px-4 text-center text-slate-500">39.89</td>
-                <td class="py-3 px-4 text-center font-semibold">54.31</td>
-                <td class="py-3 px-4 text-center font-semibold">51.76</td>
-                <td class="py-3 px-4 text-center font-semibold">50.62</td>
-                <td class="py-3 px-4 text-center font-semibold">51.55</td>
-                <td class="py-3 px-4 text-center font-semibold">54.76</td>
-                <td class="py-3 px-4 text-xs text-emerald-700"><span class="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 font-medium">Líder Institucional</span></td>
-              </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="py-3 px-4 font-bold text-indigo-700">Salón 11-2</td>
-                <td class="py-3 px-4 text-center">25</td>
-                <td class="py-3 px-4 text-center font-black text-slate-700 text-base">249.88</td>
-                <td class="py-3 px-4 text-center text-slate-500">31.87</td>
-                <td class="py-3 px-4 text-center">52.44</td>
-                <td class="py-3 px-4 text-center">49.28</td>
-                <td class="py-3 px-4 text-center">48.04</td>
-                <td class="py-3 px-4 text-center">48.36</td>
-                <td class="py-3 px-4 text-center">51.80</td>
-                <td class="py-3 px-4 text-xs text-blue-700"><span class="px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 font-medium">Mayor Homogeneidad</span></td>
-              </tr>
-              <tr class="hover:bg-slate-50">
-                <td class="py-3 px-4 font-bold text-amber-700">Salón 11-3</td>
-                <td class="py-3 px-4 text-center">25</td>
-                <td class="py-3 px-4 text-center font-black text-slate-700 text-base">248.72</td>
-                <td class="py-3 px-4 text-center text-slate-500">51.93</td>
-                <td class="py-3 px-4 text-center">54.16</td>
-                <td class="py-3 px-4 text-center">50.76</td>
-                <td class="py-3 px-4 text-center">48.24</td>
-                <td class="py-3 px-4 text-center">51.04</td>
-                <td class="py-3 px-4 text-center">49.72</td>
-                <td class="py-3 px-4 text-xs text-amber-700"><span class="px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 font-medium">Alta Dispersión (Top #1 + Rezago)</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- ==================== PESTAÑA 5: PLAN DE REFUERZO ==================== -->
-    <section id="tab-refuerzo" class="tab-content hidden space-y-6">
-      
-      <div class="bg-rose-50 border border-rose-200 rounded-2xl p-6 text-rose-950">
-        <div class="flex items-start gap-4">
-          <div class="p-3 bg-rose-100 rounded-xl text-rose-600">
-            <i data-lucide="alert-octagon" class="w-6 h-6"></i>
-          </div>
-          <div>
-            <h3 class="text-lg font-bold text-rose-900">Alerta Temprana: Plan de Tutoría y Acompañamiento Prioritario</h3>
-            <p class="text-sm text-rose-800 mt-1">
-              Se han detectado <strong>17 estudiantes</strong> que obtuvieron un Puntaje Global inferior a 220 o que acumulan 2 o más asignaturas en Nivel 1. Se sugiere citación de orientación escolar y plan de nivelación focalizado en <strong>Sociales y Ciudadanas</strong> y <strong>Ciencias Naturales</strong>.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-        <h3 class="font-bold text-slate-800 text-base mb-4">Listado de Estudiantes en Refuerzo Prioritario</h3>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead>
-              <tr class="border-b border-slate-200 text-xs text-slate-500 uppercase bg-slate-50">
-                <th class="py-3 px-4">Estudiante</th>
-                <th class="py-3 px-4">Salón</th>
-                <th class="py-3 px-4 text-center">Puntaje Global</th>
-                <th class="py-3 px-4 text-center">Lectura</th>
-                <th class="py-3 px-4 text-center">Matemáticas</th>
-                <th class="py-3 px-4 text-center">Sociales</th>
-                <th class="py-3 px-4 text-center">Ciencias</th>
-                <th class="py-3 px-4 text-center">Inglés</th>
-                <th class="py-3 px-4">Materias Críticas</th>
-                <th class="py-3 px-4 text-right">Ficha</th>
-              </tr>
-            </thead>
-            <tbody id="refuerzo-table-body" class="divide-y divide-slate-100">
-              <!-- Renderizado dinámico -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- ==================== PESTAÑA 6: NO EVALUADOS ==================== -->
-    <section id="tab-ausentes" class="tab-content hidden space-y-6">
-      
-      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-amber-950">
-        <div class="flex items-start gap-4">
-          <div class="p-3 bg-amber-100 rounded-xl text-amber-700">
-            <i data-lucide="info" class="w-6 h-6"></i>
-          </div>
-          <div>
-            <h3 class="text-lg font-bold text-amber-900">Control de Matrícula SIMAT (11 Estudiantes Sin Registro)</h3>
-            <p class="text-sm text-amber-800 mt-1">
-              Estos 11 alumnos figuran matriculados en los grupos 11-1, 11-2 y 11-3 pero no presentan puntaje en la sábana descargada del ICFES. Se muestran con sus fotos de matrícula para verificación y citación.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead>
-              <tr class="border-b border-slate-200 text-xs text-slate-500 uppercase bg-slate-50">
-                <th class="py-3 px-4">Estudiante</th>
-                <th class="py-3 px-4">Salón</th>
-                <th class="py-3 px-4">Género</th>
-                <th class="py-3 px-4">Documento</th>
-                <th class="py-3 px-4">Teléfono</th>
-                <th class="py-3 px-4">Estado</th>
-              </tr>
-            </thead>
-            <tbody id="ausentes-table-body" class="divide-y divide-slate-100">
-              <!-- Renderizado dinámico -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-    </section>
-
-  </main>
-
-  <!-- ==================== FOOTER INSTITUCIONAL ==================== -->
-  <footer class="bg-white border-t border-slate-200 py-6 mt-12 no-print">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-      <div class="flex items-center gap-3">
-        <img src="fotos/logo.png" alt="Logo" class="w-8 h-8 object-contain">
-        <div>
-          <p class="font-bold text-slate-800">Institución Educativa Juan Bautista Migani</p>
-          <p class="text-slate-400">Florencia, Caquetá · Plataforma Oficial de Análisis Saber 11</p>
-        </div>
-      </div>
-      <div class="flex items-center gap-3">
-        <span class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200">Uso Educativo Gratuito</span>
-        <button onclick="openCreditsModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 font-bold border border-slate-200 transition">
-          <i data-lucide="award" class="w-3.5 h-3.5 text-amber-500"></i>
-          <span>Créditos del Software</span>
-        </button>
-      </div>
-    </div>
-  </footer>
-
-  <!-- ==================== BOTÓN FLOTANTE DE CRÉDITOS ==================== -->
-  <div class="fixed bottom-4 right-4 z-40 no-print">
-    <button onclick="openCreditsModal()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-slate-900/90 hover:bg-slate-900 text-white text-xs font-bold shadow-xl border border-white/20 backdrop-blur-md transition transform hover:scale-105" title="Ver Créditos del Software">
-      <i data-lucide="info" class="w-3.5 h-3.5 text-amber-400"></i>
-      <span>Créditos</span>
-    </button>
   </div>
 
   <!-- ==================== MODAL 1: FICHA TÉCNICA DEL ESTUDIANTE ==================== -->
@@ -754,10 +781,7 @@
         </button>
         <div class="flex items-center gap-4">
           <div class="relative group">
-            <div id="modal-avatar" onclick="openPhotoLightbox(currentSelectedStudentIndex)" class="w-24 h-24 rounded-2xl bg-white/20 border-2 border-white/40 flex items-center justify-center text-3xl font-black text-amber-300 shadow-inner overflow-hidden cursor-pointer" title="Haz clic para ver la foto en pantalla completa">
-              <!-- Avatar or photo -->
-            </div>
-            <!-- Botón discreto para cambiar foto -->
+            <div id="modal-avatar" onclick="openPhotoLightbox(currentSelectedStudentIndex)" class="w-24 h-24 rounded-2xl bg-white/20 border-2 border-white/40 flex items-center justify-center text-3xl font-black text-amber-300 shadow-inner overflow-hidden cursor-pointer" title="Haz clic para ver la foto en pantalla completa"></div>
             <button onclick="event.stopPropagation(); triggerPhotoUpload(students[currentSelectedStudentIndex].num_id || students[currentSelectedStudentIndex].registro)" class="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-lg border-2 border-white transition" title="Cambiar foto">
               <i data-lucide="camera" class="w-4 h-4"></i>
             </button>
@@ -769,17 +793,13 @@
             </div>
             <h2 id="modal-nombre" class="text-xl font-bold text-white mt-1">Nombre del Estudiante</h2>
             <p id="modal-ids" class="text-xs text-slate-300 mt-0.5">Doc: 1119214846 | Registro: AC202631053677</p>
-            <div id="modal-extra-info" class="flex items-center gap-3 text-[11px] text-blue-200 mt-1">
-              <!-- Extra info like birthdate -->
-            </div>
+            <div id="modal-extra-info" class="flex items-center gap-3 text-[11px] text-blue-200 mt-1"></div>
           </div>
         </div>
       </div>
 
       <!-- Modal Body -->
       <div class="p-6 space-y-6">
-        
-        <!-- Puntaje Global Card -->
         <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center justify-between">
           <div>
             <span class="text-xs text-slate-500 font-medium">Puntaje Global ICFES</span>
@@ -793,15 +813,11 @@
           </div>
         </div>
 
-        <!-- Desglose de 5 Asignaturas -->
         <div>
           <h4 class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-3">Puntajes y Niveles por Asignatura</h4>
-          <div class="space-y-3" id="modal-materias-list">
-            <!-- Renderizado dinámico -->
-          </div>
+          <div class="space-y-3" id="modal-materias-list"></div>
         </div>
 
-        <!-- Recomendación Pedagógica Individual -->
         <div class="bg-blue-50/70 border border-blue-200 rounded-2xl p-4 text-xs text-slate-700 space-y-1.5">
           <p class="font-bold text-blue-900 flex items-center gap-1.5 text-sm">
             <i data-lucide="compass" class="w-4 h-4 text-blue-600"></i>
@@ -809,7 +825,6 @@
           </p>
           <p id="modal-diagnostico">Este estudiante muestra un dominio destacado...</p>
         </div>
-
       </div>
 
       <!-- Modal Footer -->
@@ -866,7 +881,6 @@
   <div id="credits-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 overflow-y-auto" onclick="closeCreditsModal(event)">
     <div class="relative bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-200 transform transition-all my-8" onclick="event.stopPropagation()">
       
-      <!-- Header con Logo del Colegio -->
       <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 p-6 text-white text-center relative">
         <button onclick="closeCreditsModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition">
           <i data-lucide="x" class="w-5 h-5"></i>
@@ -876,16 +890,14 @@
           <img src="fotos/logo.png" alt="Logo Colegio" class="w-full h-full object-contain">
         </div>
         <h3 class="text-lg font-black text-white">I.E. JUAN BAUTISTA MIGANI</h3>
-        <p class="text-xs text-blue-200">Plataforma Institucional de Analítica Saber 11</p>
+        <p class="text-xs text-amber-300 font-semibold">Uso Exclusivo para Docentes y Directivos</p>
       </div>
 
-      <!-- Contenido del Modal con Foto del Ing. Drigoberto Parra Sierra -->
       <div class="p-6 text-center space-y-5">
         
-        <!-- Foto del Desarrollador -->
         <div class="relative inline-block mx-auto">
           <div class="w-32 h-32 rounded-3xl overflow-hidden border-4 border-blue-600 shadow-xl mx-auto bg-slate-100">
-            <img src="fotos/desarrollador.jpg" alt="Ing. Drigoberto Parra Sierra" class="w-full h-full object-cover">
+            <img src="fotos/desarrollador.jpg" onerror="this.src='fotos/Ing. Drigoberto Parra Sierra.jpg'" alt="Ing. Drigoberto Parra Sierra" class="w-full h-full object-cover">
           </div>
           <div class="absolute -bottom-2 -right-2 p-1.5 rounded-xl bg-amber-400 text-slate-950 shadow-md">
             <i data-lucide="code" class="w-4 h-4"></i>
@@ -899,15 +911,14 @@
           <p class="text-xs text-slate-500 mt-0.5">Institución Educativa Juan Bautista Migani · Florencia, Caquetá</p>
         </div>
 
-        <!-- Ficha de Licencia y Propósito -->
         <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-left space-y-3 text-xs">
           <div class="flex items-start gap-2.5">
-            <div class="p-1.5 rounded-lg bg-emerald-100 text-emerald-700 mt-0.5">
-              <i data-lucide="shield-check" class="w-4 h-4"></i>
+            <div class="p-1.5 rounded-lg bg-amber-100 text-amber-800 mt-0.5">
+              <i data-lucide="shield-alert" class="w-4 h-4"></i>
             </div>
             <div>
-              <p class="font-bold text-slate-800">Licencia de Software</p>
-              <p class="text-slate-600">Uso Educativo Gratuito y de libre consulta institucional para directivos, docentes, estudiantes y padres de familia.</p>
+              <p class="font-bold text-slate-800">Licencia y Restricción de Uso</p>
+              <p class="text-slate-600">Software de <strong>Uso Exclusivo para Docentes y Directivos</strong> de la I.E. Juan Bautista Migani. Acceso institucional protegido por contraseña.</p>
             </div>
           </div>
 
@@ -917,22 +928,21 @@
             </div>
             <div>
               <p class="font-bold text-slate-800">Tecnologías y Métricas</p>
-              <p class="text-slate-600">Desarrollado con HTML5, Tailwind CSS, Chart.js, Lucide Icons y procesamiento de datos ICFES en Python.</p>
+              <p class="text-slate-600">Desarrollado con HTML5, Tailwind CSS, Chart.js, Lucide Icons, seguridad criptográfica y analítica de datos en Python.</p>
             </div>
           </div>
 
           <div class="flex items-start gap-2.5">
-            <div class="p-1.5 rounded-lg bg-amber-100 text-amber-700 mt-0.5">
+            <div class="p-1.5 rounded-lg bg-emerald-100 text-emerald-700 mt-0.5">
               <i data-lucide="sparkles" class="w-4 h-4"></i>
             </div>
             <div>
               <p class="font-bold text-slate-800">Misión del Proyecto</p>
-              <p class="text-slate-600">Fortalecer la toma de decisiones pedagógicas, el reconocimiento al mérito estudiantil y la planeación del mejoramiento institucional (PMI).</p>
+              <p class="text-slate-600">Facilitar el análisis estratégico de resultados Saber 11, la caracterización de los estudiantes y la formulación del Plan de Mejoramiento Institucional (PMI).</p>
             </div>
           </div>
         </div>
 
-        <!-- Botón cerrar -->
         <div class="pt-2">
           <button onclick="closeCreditsModal()" class="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-lg transition">
             Cerrar Créditos
@@ -944,8 +954,12 @@
     </div>
   </div>
 
-  <!-- SCRIPT DE DATOS Y LÓGICA COMPLETA -->
+  <!-- SCRIPT DE DATOS, AUTENTICACIÓN Y LÓGICA -->
   <script>
+    // Hash criptográfico SHA-256 de la contraseña 'Sistemas2026'
+    const PWD_HASH = "a18978d1ed275dce722bcea23d7f4c50e67f896934b226ccedd1d11840855d87";
+
+    // Datos institucionales
     const RAW_DATA = {"institucion": "Institución Educativa Juan Bautista Migani", "jornada": "Mañana", "dane": "183001001598", "codigo_icfes": "019158", "total_evaluados": 79, "promedio_global": 254.43, "mediana_global": 252.0, "desviacion_global": 41.95, "max_global": 404, "min_global": 185, "comparativa_historica": {"evaluados_2025": 85, "evaluados_2026": 79, "diff_evaluados": -6, "global_2025": 259.39, "global_2026": 254.43, "diff_global": -4.96, "mediana_2025": 257.0, "mediana_2026": 252.0, "diff_mediana": -5.0, "max_2025": 370, "max_2026": 404, "diff_max": 34, "over300_2025": 19, "over300_2026": 10, "over300_pct_2025": 22.4, "over300_pct_2026": 12.7, "materias": {"lc": {"nombre": "Lectura Crítica", "prom_2025": 54.08, "prom_2026": 53.49, "diff": -0.59}, "mat": {"nombre": "Matemáticas", "prom_2025": 51.94, "prom_2026": 50.51, "diff": -1.43}, "soc": {"nombre": "Sociales y Ciudadanas", "prom_2025": 50.35, "prom_2026": 49.05, "diff": -1.3}, "cn": {"nombre": "Ciencias Naturales", "prom_2025": 51.13, "prom_2026": 50.04, "diff": -1.09}, "ing": {"nombre": "Inglés", "prom_2025": 52.04, "prom_2026": 52.23, "diff": 0.19}}}, "estudiantes": [{"puesto": 1, "registro": "AC202631054063", "nombre": "Jeremy Joel  Moreno Gualdron ", "grupo": "11-3", "genero": "MASCULINO", "num_id": "1028402567", "codigo": "2082.0", "global": 404, "badge": "Podio de Honor", "badge_type": "podium", "initials": "JJ", "has_photo": true, "photo_file": "fotos/1028402567.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 100, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 70, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 100, "nivel": "4", "decil": 100}, "mat": {"nombre": "Matemáticas", "puntaje": 72, "nivel": "4", "decil": 96}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 70, "nivel": "3", "decil": 98}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 75, "nivel": "4", "decil": 100}, "ing": {"nombre": "Inglés", "puntaje": 100, "nivel": "B+", "decil": 100}}, "conteo_bajos": 0}, {"puesto": 2, "registro": "AC202631053933", "nombre": "Manuela  Portilla Ballesteros", "grupo": "11-1", "genero": "FEMENINO", "num_id": "1117933360", "codigo": "261.0", "global": 350, "badge": "Podio de Honor", "badge_type": "podium", "initials": "MP", "has_photo": true, "photo_file": "fotos/1117933360.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 75, "area_refuerzo": "Ciencias Naturales", "peor_puntaje": 65, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 74, "nivel": "4", "decil": 99}, "mat": {"nombre": "Matemáticas", "puntaje": 66, "nivel": "3", "decil": 88}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 73, "nivel": "4", "decil": 99}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 65, "nivel": "3", "decil": 91}, "ing": {"nombre": "Inglés", "puntaje": 75, "nivel": "B1", "decil": 94}}, "conteo_bajos": 0}, {"puesto": 3, "registro": "AC202631053842", "nombre": "Juan Angel Guerrero Cardenas", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1064837408", "codigo": "287.0", "global": 338, "badge": "Podio de Honor", "badge_type": "podium", "initials": "JA", "has_photo": true, "photo_file": "fotos/1064837408.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 83, "area_refuerzo": "Lectura Crítica", "peor_puntaje": 65, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 65, "nivel": "3", "decil": 89}, "mat": {"nombre": "Matemáticas", "puntaje": 69, "nivel": "3", "decil": 93}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 65, "nivel": "3", "decil": 93}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 66, "nivel": "3", "decil": 93}, "ing": {"nombre": "Inglés", "puntaje": 83, "nivel": "B+", "decil": 99}}, "conteo_bajos": 0}, {"puesto": 4, "registro": "AC202631053453", "nombre": "Luis Gabriel Portela Garcia", "grupo": "11-3", "genero": "MASCULINO", "num_id": "1114004015", "codigo": "1908.0", "global": 329, "badge": "Top 10 Institucional", "badge_type": "top10", "initials": "LG", "has_photo": true, "photo_file": "fotos/1114004015.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Sociales y Ciudadanas", "mejor_puntaje": 68, "area_refuerzo": "Inglés", "peor_puntaje": 63, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 64, "nivel": "3", "decil": 88}, "mat": {"nombre": "Matemáticas", "puntaje": 66, "nivel": "3", "decil": 89}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 68, "nivel": "3", "decil": 96}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 66, "nivel": "3", "decil": 94}, "ing": {"nombre": "Inglés", "puntaje": 63, "nivel": "A2", "decil": 80}}, "conteo_bajos": 0}, {"puesto": 5, "registro": "AC202631054014", "nombre": "Andres Mauricio Bermeo Calderon", "grupo": "11-3", "genero": "MASCULINO", "num_id": "1117522168", "codigo": "2034.0", "global": 322, "badge": "Top 10 Institucional", "badge_type": "top10", "initials": "AM", "has_photo": true, "photo_file": "fotos/1117522168.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Matemáticas", "mejor_puntaje": 68, "area_refuerzo": "Inglés", "peor_puntaje": 55, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 67, "nivel": "4", "decil": 93}, "mat": {"nombre": "Matemáticas", "puntaje": 68, "nivel": "3", "decil": 92}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 61, "nivel": "3", "decil": 86}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 65, "nivel": "3", "decil": 91}, "ing": {"nombre": "Inglés", "puntaje": 55, "nivel": "A1", "decil": 62}}, "conteo_bajos": 1}, {"puesto": 6, "registro": "AC202631053792", "nombre": "Santiago  Alvarez Cardozo", "grupo": "11-1", "genero": "MASCULINO", "num_id": "1117935001", "codigo": "234.0", "global": 317, "badge": "Top 10 Institucional", "badge_type": "top10", "initials": "SA", "has_photo": true, "photo_file": "fotos/1117935001.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 67, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 62, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 64, "nivel": "3", "decil": 88}, "mat": {"nombre": "Matemáticas", "puntaje": 63, "nivel": "3", "decil": 83}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 62, "nivel": "3", "decil": 86}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 63, "nivel": "3", "decil": 88}, "ing": {"nombre": "Inglés", "puntaje": 67, "nivel": "A2", "decil": 86}}, "conteo_bajos": 0}, {"puesto": 7, "registro": "AC202631054006", "nombre": "Ehiny Juliana Cabrera Ascencio", "grupo": "11-1", "genero": "FEMENINO", "num_id": "1029561005", "codigo": "1861.0", "global": 315, "badge": "Top 10 Institucional", "badge_type": "top10", "initials": "EJ", "has_photo": true, "photo_file": "fotos/1029561005.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Matemáticas", "mejor_puntaje": 68, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 58, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 63, "nivel": "3", "decil": 84}, "mat": {"nombre": "Matemáticas", "puntaje": 68, "nivel": "3", "decil": 92}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 58, "nivel": "3", "decil": 79}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 62, "nivel": "3", "decil": 86}, "ing": {"nombre": "Inglés", "puntaje": 67, "nivel": "A2", "decil": 86}}, "conteo_bajos": 0}, {"puesto": 8, "registro": "AC202631053776", "nombre": "Jeronimo  Robles Hurtado", "grupo": "11-1", "genero": "MASCULINO", "num_id": "1029560715", "codigo": "1446.0", "global": 311, "badge": "Top 10 Institucional", "badge_type": "top10", "initials": "JR", "has_photo": true, "photo_file": "fotos/1029560715.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 79, "area_refuerzo": "Ciencias Naturales", "peor_puntaje": 55, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 61, "nivel": "3", "decil": 79}, "mat": {"nombre": "Matemáticas", "puntaje": 66, "nivel": "3", "decil": 89}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 61, "nivel": "3", "decil": 85}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 55, "nivel": "2", "decil": 68}, "ing": {"nombre": "Inglés", "puntaje": 79, "nivel": "B+", "decil": 98}}, "conteo_bajos": 0}, {"puesto": 9, "registro": "AC202631053727", "nombre": "Miguel Angel Bermeo Pizo", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1118367530", "codigo": "273.0", "global": 310, "badge": "Top 10 Institucional", "badge_type": "top10", "initials": "MA", "has_photo": true, "photo_file": "fotos/1118367530.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Sociales y Ciudadanas", "mejor_puntaje": 65, "area_refuerzo": "Matemáticas", "peor_puntaje": 56, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 64, "nivel": "3", "decil": 86}, "mat": {"nombre": "Matemáticas", "puntaje": 56, "nivel": "3", "decil": 66}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 65, "nivel": "3", "decil": 92}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 64, "nivel": "3", "decil": 90}, "ing": {"nombre": "Inglés", "puntaje": 60, "nivel": "A2", "decil": 74}}, "conteo_bajos": 0}, {"puesto": 10, "registro": "AC202631054147", "nombre": "Janna  Uribe Gaitan", "grupo": "11-3", "genero": "FEMENINO", "num_id": "1117515985", "codigo": "2051.0", "global": 301, "badge": "Top 10 Institucional", "badge_type": "top10", "initials": "JU", "has_photo": true, "photo_file": "fotos/1117515985.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Sociales y Ciudadanas", "mejor_puntaje": 64, "area_refuerzo": "Lectura Crítica", "peor_puntaje": 57, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 57, "nivel": "3", "decil": 66}, "mat": {"nombre": "Matemáticas", "puntaje": 61, "nivel": "3", "decil": 80}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 64, "nivel": "3", "decil": 91}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 59, "nivel": "3", "decil": 79}, "ing": {"nombre": "Inglés", "puntaje": 60, "nivel": "A2", "decil": 74}}, "conteo_bajos": 0}, {"puesto": 11, "registro": "AC202631053404", "nombre": "Heilen Danitza Valencia Gutierrez", "grupo": "11-1", "genero": "FEMENINO", "num_id": "1115948151", "codigo": "269.0", "global": 299, "badge": "Nivel Superior", "badge_type": "superior", "initials": "HD", "has_photo": true, "photo_file": "fotos/1115948151.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Sociales y Ciudadanas", "mejor_puntaje": 67, "area_refuerzo": "Matemáticas", "peor_puntaje": 50, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 58, "nivel": "3", "decil": 69}, "mat": {"nombre": "Matemáticas", "puntaje": 50, "nivel": "2", "decil": 50}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 67, "nivel": "3", "decil": 94}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 62, "nivel": "3", "decil": 87}, "ing": {"nombre": "Inglés", "puntaje": 67, "nivel": "A2", "decil": 86}}, "conteo_bajos": 0}, {"puesto": 12, "registro": "AC202631053511", "nombre": "Cristian Andres Guzman Yara", "grupo": "11-1", "genero": "MASCULINO", "num_id": "1116205880", "codigo": "1365.0", "global": 298, "badge": "Nivel Superior", "badge_type": "superior", "initials": "CA", "has_photo": true, "photo_file": "fotos/1116205880.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Matemáticas", "mejor_puntaje": 62, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 58, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 60, "nivel": "3", "decil": 76}, "mat": {"nombre": "Matemáticas", "puntaje": 62, "nivel": "3", "decil": 82}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 58, "nivel": "3", "decil": 77}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 58, "nivel": "3", "decil": 75}, "ing": {"nombre": "Inglés", "puntaje": 61, "nivel": "A2", "decil": 76}}, "conteo_bajos": 0}, {"puesto": 13, "registro": "AC202631053438", "nombre": "Juan Esteban Joven Rios", "grupo": "11-1", "genero": "MASCULINO", "num_id": "1029560796", "codigo": "252.0", "global": 297, "badge": "Nivel Superior", "badge_type": "superior", "initials": "JE", "has_photo": true, "photo_file": "fotos/1029560796.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Ciencias Naturales", "mejor_puntaje": 64, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 53, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 60, "nivel": "3", "decil": 75}, "mat": {"nombre": "Matemáticas", "puntaje": 59, "nivel": "3", "decil": 74}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 53, "nivel": "2", "decil": 64}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 64, "nivel": "3", "decil": 89}, "ing": {"nombre": "Inglés", "puntaje": 63, "nivel": "A2", "decil": 80}}, "conteo_bajos": 0}, {"puesto": 14, "registro": "AC202631053545", "nombre": "Samuel  Cendales Cedeño", "grupo": "11-1", "genero": "MASCULINO", "num_id": "1117932742", "codigo": "238.0", "global": 294, "badge": "Nivel Superior", "badge_type": "superior", "initials": "SC", "has_photo": true, "photo_file": "fotos/1117932742.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Sociales y Ciudadanas", "mejor_puntaje": 63, "area_refuerzo": "Ciencias Naturales", "peor_puntaje": 55, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 57, "nivel": "3", "decil": 65}, "mat": {"nombre": "Matemáticas", "puntaje": 60, "nivel": "3", "decil": 77}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 63, "nivel": "3", "decil": 88}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 55, "nivel": "2", "decil": 65}, "ing": {"nombre": "Inglés", "puntaje": 59, "nivel": "A2", "decil": 73}}, "conteo_bajos": 0}, {"puesto": 15, "registro": "AC202631054162", "nombre": "Brayan Stiven Restrepo Guerra", "grupo": "11-1", "genero": "MASCULINO", "num_id": "1117932859", "codigo": "263.0", "global": 294, "badge": "Nivel Superior", "badge_type": "superior", "initials": "BS", "has_photo": true, "photo_file": "fotos/1117932859.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Matemáticas", "mejor_puntaje": 62, "area_refuerzo": "Lectura Crítica", "peor_puntaje": 55, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 55, "nivel": "3", "decil": 56}, "mat": {"nombre": "Matemáticas", "puntaje": 62, "nivel": "3", "decil": 81}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 58, "nivel": "3", "decil": 79}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 60, "nivel": "3", "decil": 81}, "ing": {"nombre": "Inglés", "puntaje": 60, "nivel": "A2", "decil": 75}}, "conteo_bajos": 0}, {"puesto": 16, "registro": "AC202631054105", "nombre": "Jireth Sofia Hoyos Nuñez", "grupo": "11-1", "genero": "FEMENINO", "num_id": "1118370459", "codigo": "251.0", "global": 293, "badge": "Nivel Superior", "badge_type": "superior", "initials": "JS", "has_photo": true, "photo_file": "fotos/1118370459.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 69, "area_refuerzo": "Matemáticas", "peor_puntaje": 54, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 58, "nivel": "3", "decil": 70}, "mat": {"nombre": "Matemáticas", "puntaje": 54, "nivel": "3", "decil": 61}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 58, "nivel": "3", "decil": 78}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 61, "nivel": "3", "decil": 85}, "ing": {"nombre": "Inglés", "puntaje": 69, "nivel": "B1", "decil": 88}}, "conteo_bajos": 0}, {"puesto": 17, "registro": "AC202631054154", "nombre": "Edna Fernanda Medina Jaramillo", "grupo": "11-3", "genero": "MASCULINO", "num_id": "1118024758", "codigo": "1889.0", "global": 288, "badge": "Nivel Superior", "badge_type": "superior", "initials": "EF", "has_photo": true, "photo_file": "fotos/1118024758.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Ciencias Naturales", "mejor_puntaje": 65, "area_refuerzo": "Matemáticas", "peor_puntaje": 51, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 62, "nivel": "3", "decil": 81}, "mat": {"nombre": "Matemáticas", "puntaje": 51, "nivel": "3", "decil": 52}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 54, "nivel": "2", "decil": 65}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 65, "nivel": "3", "decil": 91}, "ing": {"nombre": "Inglés", "puntaje": 53, "nivel": "A1", "decil": 57}}, "conteo_bajos": 1}, {"puesto": 18, "registro": "AC202631053420", "nombre": "Sharith Dayana Palechor Reyes", "grupo": "11-3", "genero": "FEMENINO", "num_id": "1117517990", "codigo": "2059.0", "global": 287, "badge": "Nivel Superior", "badge_type": "superior", "initials": "SD", "has_photo": true, "photo_file": "fotos/1117517990.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 66, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 53, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 57, "nivel": "3", "decil": 67}, "mat": {"nombre": "Matemáticas", "puntaje": 62, "nivel": "3", "decil": 81}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 53, "nivel": "2", "decil": 64}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 55, "nivel": "2", "decil": 67}, "ing": {"nombre": "Inglés", "puntaje": 66, "nivel": "A2", "decil": 85}}, "conteo_bajos": 0}, {"puesto": 19, "registro": "AC202631053990", "nombre": "Duvier Andres Ordoñez Valderrama", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1117519079", "codigo": "331.0", "global": 287, "badge": "Nivel Superior", "badge_type": "superior", "initials": "DA", "has_photo": true, "photo_file": "fotos/1117519079.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Matemáticas", "mejor_puntaje": 63, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 48, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 59, "nivel": "3", "decil": 71}, "mat": {"nombre": "Matemáticas", "puntaje": 63, "nivel": "3", "decil": 84}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 48, "nivel": "2", "decil": 47}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 59, "nivel": "3", "decil": 79}, "ing": {"nombre": "Inglés", "puntaje": 59, "nivel": "A2", "decil": 72}}, "conteo_bajos": 0}, {"puesto": 20, "registro": "AC202631053750", "nombre": "Maria Paula Parra Carvajal", "grupo": "11-1", "genero": "FEMENINO", "num_id": "1117519607", "codigo": "260.0", "global": 279, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "MP", "has_photo": true, "photo_file": "fotos/1117519607.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 67, "area_refuerzo": "Matemáticas", "peor_puntaje": 43, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 67, "nivel": "4", "decil": 93}, "mat": {"nombre": "Matemáticas", "puntaje": 43, "nivel": "2", "decil": 27}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 58, "nivel": "3", "decil": 78}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 59, "nivel": "3", "decil": 77}, "ing": {"nombre": "Inglés", "puntaje": 44, "nivel": "A-", "decil": 25}}, "conteo_bajos": 1}, {"puesto": 21, "registro": "AC202631053867", "nombre": "Yohan Nicolas Arango Rojas", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1117513649", "codigo": "1100.0", "global": 278, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "YN", "has_photo": true, "photo_file": "fotos/1117513649.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Matemáticas", "mejor_puntaje": 62, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 47, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 56, "nivel": "3", "decil": 62}, "mat": {"nombre": "Matemáticas", "puntaje": 62, "nivel": "3", "decil": 81}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 47, "nivel": "2", "decil": 43}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 57, "nivel": "3", "decil": 74}, "ing": {"nombre": "Inglés", "puntaje": 56, "nivel": "A1", "decil": 66}}, "conteo_bajos": 1}, {"puesto": 22, "registro": "AC202631053446", "nombre": "Sharil Karina Garcia Galindo", "grupo": "11-3", "genero": "FEMENINO", "num_id": "1115792588", "codigo": "1919.0", "global": 273, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "SK", "has_photo": true, "photo_file": "fotos/1115792588.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 63, "area_refuerzo": "Inglés", "peor_puntaje": 44, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 63, "nivel": "3", "decil": 84}, "mat": {"nombre": "Matemáticas", "puntaje": 51, "nivel": "3", "decil": 53}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 57, "nivel": "3", "decil": 75}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 51, "nivel": "2", "decil": 51}, "ing": {"nombre": "Inglés", "puntaje": 44, "nivel": "A-", "decil": 25}}, "conteo_bajos": 1}, {"puesto": 23, "registro": "AC202631053461", "nombre": "Jose Miguel Vasquez Sanchez", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1118366339", "codigo": "309.0", "global": 273, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "JM", "has_photo": true, "photo_file": "fotos/1118366339.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 68, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 49, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 50, "nivel": "2", "decil": 37}, "mat": {"nombre": "Matemáticas", "puntaje": 59, "nivel": "3", "decil": 74}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 49, "nivel": "2", "decil": 51}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 56, "nivel": "3", "decil": 68}, "ing": {"nombre": "Inglés", "puntaje": 68, "nivel": "B1", "decil": 87}}, "conteo_bajos": 0}, {"puesto": 24, "registro": "AC202631053636", "nombre": "Jhoan Alexander Giraldo Laverde", "grupo": "11-1", "genero": "MASCULINO", "num_id": "1029560801", "codigo": "247.0", "global": 272, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "JA", "has_photo": true, "photo_file": "fotos/1029560801.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Ciencias Naturales", "mejor_puntaje": 59, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 51, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 56, "nivel": "3", "decil": 63}, "mat": {"nombre": "Matemáticas", "puntaje": 53, "nivel": "3", "decil": 59}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 51, "nivel": "2", "decil": 58}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 59, "nivel": "3", "decil": 79}, "ing": {"nombre": "Inglés", "puntaje": 51, "nivel": "A1", "decil": 51}}, "conteo_bajos": 1}, {"puesto": 25, "registro": "AC202631053768", "nombre": "Yumbran Arlendy Ramirez Rivera", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1117931304", "codigo": "300.0", "global": 270, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "YA", "has_photo": true, "photo_file": "fotos/1117931304.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Ciencias Naturales", "mejor_puntaje": 55, "area_refuerzo": "Inglés", "peor_puntaje": 50, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 54, "nivel": "3", "decil": 53}, "mat": {"nombre": "Matemáticas", "puntaje": 54, "nivel": "3", "decil": 59}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 54, "nivel": "2", "decil": 67}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 55, "nivel": "2", "decil": 65}, "ing": {"nombre": "Inglés", "puntaje": 50, "nivel": "A1", "decil": 46}}, "conteo_bajos": 1}, {"puesto": 26, "registro": "AC202631053537", "nombre": "Juan David Alvarez ", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1118366344", "codigo": "271.0", "global": 268, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "JD", "has_photo": true, "photo_file": "fotos/1118366344.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Matemáticas", "mejor_puntaje": 61, "area_refuerzo": "Ciencias Naturales", "peor_puntaje": 48, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 49, "nivel": "2", "decil": 35}, "mat": {"nombre": "Matemáticas", "puntaje": 61, "nivel": "3", "decil": 80}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 55, "nivel": "2", "decil": 68}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 48, "nivel": "2", "decil": 43}, "ing": {"nombre": "Inglés", "puntaje": 58, "nivel": "A2", "decil": 71}}, "conteo_bajos": 0}, {"puesto": 27, "registro": "AC202631053701", "nombre": "Juan Diego Silva Rojas", "grupo": "11-1", "genero": "MASCULINO", "num_id": "1118370629", "codigo": "267.0", "global": 267, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "JD", "has_photo": true, "photo_file": "fotos/1118370629.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 68, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 47, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 54, "nivel": "3", "decil": 55}, "mat": {"nombre": "Matemáticas", "puntaje": 52, "nivel": "3", "decil": 56}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 47, "nivel": "2", "decil": 45}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 56, "nivel": "3", "decil": 68}, "ing": {"nombre": "Inglés", "puntaje": 68, "nivel": "B1", "decil": 87}}, "conteo_bajos": 0}, {"puesto": 28, "registro": "AC202631053578", "nombre": "Karen Sofia Duran Rodriguez", "grupo": "11-1", "genero": "FEMENINO", "num_id": "1117522987", "codigo": "244.0", "global": 266, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "KS", "has_photo": true, "photo_file": "fotos/1117522987.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Ciencias Naturales", "mejor_puntaje": 58, "area_refuerzo": "Matemáticas", "peor_puntaje": 49, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 54, "nivel": "3", "decil": 52}, "mat": {"nombre": "Matemáticas", "puntaje": 49, "nivel": "2", "decil": 47}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 52, "nivel": "2", "decil": 61}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 58, "nivel": "3", "decil": 76}, "ing": {"nombre": "Inglés", "puntaje": 53, "nivel": "A1", "decil": 57}}, "conteo_bajos": 1}, {"puesto": 29, "registro": "AC202631053958", "nombre": "Mariana  Serrato Oviedo", "grupo": "11-3", "genero": "FEMENINO", "num_id": "1117932237", "codigo": "2035.0", "global": 266, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "MS", "has_photo": true, "photo_file": "fotos/1117932237.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 58, "area_refuerzo": "Ciencias Naturales", "peor_puntaje": 50, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 58, "nivel": "3", "decil": 68}, "mat": {"nombre": "Matemáticas", "puntaje": 51, "nivel": "3", "decil": 52}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 54, "nivel": "2", "decil": 66}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 50, "nivel": "2", "decil": 48}, "ing": {"nombre": "Inglés", "puntaje": 52, "nivel": "A1", "decil": 54}}, "conteo_bajos": 1}, {"puesto": 30, "registro": "AC202631056332", "nombre": "Clara Sthefany Angulo Sacanamboy", "grupo": "11-3", "genero": "FEMENINO", "num_id": "1117526145", "codigo": "1390.0", "global": 266, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "CS", "has_photo": true, "photo_file": "fotos/1117526145.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 61, "area_refuerzo": "Inglés", "peor_puntaje": 49, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 61, "nivel": "3", "decil": 79}, "mat": {"nombre": "Matemáticas", "puntaje": 52, "nivel": "3", "decil": 55}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 51, "nivel": "2", "decil": 57}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 50, "nivel": "2", "decil": 48}, "ing": {"nombre": "Inglés", "puntaje": 49, "nivel": "A1", "decil": 42}}, "conteo_bajos": 1}, {"puesto": 31, "registro": "AC202631054097", "nombre": "Breiner Eliecer Nuñez Sanchez", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1117523963", "codigo": "1675.0", "global": 265, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "BE", "has_photo": true, "photo_file": "fotos/1117523963.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Sociales y Ciudadanas", "mejor_puntaje": 58, "area_refuerzo": "Ciencias Naturales", "peor_puntaje": 45, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 56, "nivel": "3", "decil": 60}, "mat": {"nombre": "Matemáticas", "puntaje": 54, "nivel": "3", "decil": 60}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 58, "nivel": "3", "decil": 77}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 45, "nivel": "2", "decil": 31}, "ing": {"nombre": "Inglés", "puntaje": 50, "nivel": "A1", "decil": 46}}, "conteo_bajos": 1}, {"puesto": 32, "registro": "AC202631053552", "nombre": "Luis Esteban Mendez Artunduaga", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1117933007", "codigo": "1465.0", "global": 263, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "LE", "has_photo": true, "photo_file": "fotos/1117933007.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 62, "area_refuerzo": "Matemáticas", "peor_puntaje": 50, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 53, "nivel": "3", "decil": 50}, "mat": {"nombre": "Matemáticas", "puntaje": 50, "nivel": "2", "decil": 48}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 50, "nivel": "2", "decil": 53}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 54, "nivel": "2", "decil": 61}, "ing": {"nombre": "Inglés", "puntaje": 62, "nivel": "A2", "decil": 78}}, "conteo_bajos": 0}, {"puesto": 33, "registro": "AC202631053669", "nombre": "Juan Pablo Gomez Garcia", "grupo": "11-1", "genero": "MASCULINO", "num_id": "1118370866", "codigo": "248.0", "global": 262, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "JP", "has_photo": true, "photo_file": "fotos/1118370866.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 54, "area_refuerzo": "Ciencias Naturales", "peor_puntaje": 51, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 53, "nivel": "3", "decil": 51}, "mat": {"nombre": "Matemáticas", "puntaje": 53, "nivel": "3", "decil": 59}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 52, "nivel": "2", "decil": 60}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 51, "nivel": "2", "decil": 52}, "ing": {"nombre": "Inglés", "puntaje": 54, "nivel": "A1", "decil": 62}}, "conteo_bajos": 1}, {"puesto": 34, "registro": "AC202631053677", "nombre": "Adrian Javier Londoño Fernandez", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1119212329", "codigo": "1674.0", "global": 260, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "AJ", "has_photo": true, "photo_file": "fotos/1119212329.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 58, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 46, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 58, "nivel": "3", "decil": 70}, "mat": {"nombre": "Matemáticas", "puntaje": 52, "nivel": "3", "decil": 56}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 46, "nivel": "2", "decil": 41}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 51, "nivel": "2", "decil": 52}, "ing": {"nombre": "Inglés", "puntaje": 55, "nivel": "A1", "decil": 63}}, "conteo_bajos": 1}, {"puesto": 35, "registro": "AC202631053891", "nombre": "Santiago Steven Diaz Marin", "grupo": "11-1", "genero": "MASCULINO", "num_id": "1029560988", "codigo": "243.0", "global": 260, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "SS", "has_photo": true, "photo_file": "fotos/1029560988.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Matemáticas", "mejor_puntaje": 63, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 43, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 47, "nivel": "2", "decil": 26}, "mat": {"nombre": "Matemáticas", "puntaje": 63, "nivel": "3", "decil": 83}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 43, "nivel": "2", "decil": 31}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 57, "nivel": "3", "decil": 73}, "ing": {"nombre": "Inglés", "puntaje": 45, "nivel": "A-", "decil": 27}}, "conteo_bajos": 1}, {"puesto": 36, "registro": "AC202631053529", "nombre": "Yurian Mauricio Cuellar Morea", "grupo": "11-1", "genero": "MASCULINO", "num_id": "1029560700", "codigo": "242.0", "global": 260, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "YM", "has_photo": true, "photo_file": "fotos/1029560700.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 57, "area_refuerzo": "Inglés", "peor_puntaje": 43, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 57, "nivel": "3", "decil": 66}, "mat": {"nombre": "Matemáticas", "puntaje": 57, "nivel": "3", "decil": 70}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 49, "nivel": "2", "decil": 50}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 48, "nivel": "2", "decil": 40}, "ing": {"nombre": "Inglés", "puntaje": 43, "nivel": "A-", "decil": 23}}, "conteo_bajos": 1}, {"puesto": 37, "registro": "AC202631053818", "nombre": "Miguel Angel Puentes Buitrago", "grupo": "11-1", "genero": "MASCULINO", "num_id": "1117517606", "codigo": "1778.0", "global": 259, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "MA", "has_photo": true, "photo_file": "fotos/1117517606.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Matemáticas", "mejor_puntaje": 56, "area_refuerzo": "Inglés", "peor_puntaje": 44, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 54, "nivel": "3", "decil": 53}, "mat": {"nombre": "Matemáticas", "puntaje": 56, "nivel": "3", "decil": 65}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 53, "nivel": "2", "decil": 63}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 47, "nivel": "2", "decil": 39}, "ing": {"nombre": "Inglés", "puntaje": 44, "nivel": "A-", "decil": 26}}, "conteo_bajos": 1}, {"puesto": 38, "registro": "AC202631053925", "nombre": "Nicolas  Gonzalez Farfan", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1118370273", "codigo": "249.0", "global": 257, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "NG", "has_photo": true, "photo_file": "fotos/1118370273.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 55, "area_refuerzo": "Matemáticas", "peor_puntaje": 49, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 55, "nivel": "3", "decil": 57}, "mat": {"nombre": "Matemáticas", "puntaje": 49, "nivel": "2", "decil": 46}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 50, "nivel": "2", "decil": 52}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 51, "nivel": "2", "decil": 53}, "ing": {"nombre": "Inglés", "puntaje": 54, "nivel": "A1", "decil": 60}}, "conteo_bajos": 1}, {"puesto": 39, "registro": "AC202631053412", "nombre": "Angel Felipe Zuluaga Bautista", "grupo": "11-1", "genero": "MASCULINO", "num_id": "1029560335", "codigo": "1810.0", "global": 253, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "AF", "has_photo": true, "photo_file": "fotos/1029560335.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 59, "area_refuerzo": "Matemáticas", "peor_puntaje": 47, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 52, "nivel": "3", "decil": 46}, "mat": {"nombre": "Matemáticas", "puntaje": 47, "nivel": "2", "decil": 38}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 52, "nivel": "2", "decil": 60}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 49, "nivel": "2", "decil": 46}, "ing": {"nombre": "Inglés", "puntaje": 59, "nivel": "A2", "decil": 71}}, "conteo_bajos": 0}, {"puesto": 40, "registro": "AC202631053628", "nombre": "Laura Kamila Puentes Barrios", "grupo": "11-3", "genero": "FEMENINO", "num_id": "1115947492", "codigo": "1914.0", "global": 252, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "LK", "has_photo": true, "photo_file": "fotos/1115947492.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 63, "area_refuerzo": "Matemáticas", "peor_puntaje": 44, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 59, "nivel": "3", "decil": 74}, "mat": {"nombre": "Matemáticas", "puntaje": 44, "nivel": "2", "decil": 30}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 47, "nivel": "2", "decil": 44}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 47, "nivel": "2", "decil": 37}, "ing": {"nombre": "Inglés", "puntaje": 63, "nivel": "A2", "decil": 80}}, "conteo_bajos": 0}, {"puesto": 41, "registro": "AC202631053719", "nombre": "William Arturo Montiel Salgado", "grupo": "11-1", "genero": "MASCULINO", "num_id": "1029580375", "codigo": "257.0", "global": 248, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "WA", "has_photo": true, "photo_file": "fotos/1029580375.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Matemáticas", "mejor_puntaje": 58, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 41, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 51, "nivel": "3", "decil": 42}, "mat": {"nombre": "Matemáticas", "puntaje": 58, "nivel": "3", "decil": 73}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 41, "nivel": "2", "decil": 26}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 48, "nivel": "2", "decil": 43}, "ing": {"nombre": "Inglés", "puntaje": 51, "nivel": "A1", "decil": 49}}, "conteo_bajos": 1}, {"puesto": 42, "registro": "AC202631053396", "nombre": "Manuel  Llanten Carvajal", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1089606333", "codigo": "1464.0", "global": 244, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "ML", "has_photo": true, "photo_file": "fotos/1089606333.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 52, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 47, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 52, "nivel": "3", "decil": 47}, "mat": {"nombre": "Matemáticas", "puntaje": 49, "nivel": "2", "decil": 44}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 47, "nivel": "2", "decil": 44}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 48, "nivel": "2", "decil": 42}, "ing": {"nombre": "Inglés", "puntaje": 47, "nivel": "A-", "decil": 36}}, "conteo_bajos": 1}, {"puesto": 43, "registro": "AC202631053826", "nombre": "Yeison Alejandro Garcia Medina", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1117234571", "codigo": "283.0", "global": 243, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "YA", "has_photo": true, "photo_file": "fotos/1117234571.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Sociales y Ciudadanas", "mejor_puntaje": 54, "area_refuerzo": "Inglés", "peor_puntaje": 38, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 45, "nivel": "2", "decil": 21}, "mat": {"nombre": "Matemáticas", "puntaje": 45, "nivel": "2", "decil": 35}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 54, "nivel": "2", "decil": 66}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 54, "nivel": "2", "decil": 62}, "ing": {"nombre": "Inglés", "puntaje": 38, "nivel": "A-", "decil": 12}}, "conteo_bajos": 1}, {"puesto": 44, "registro": "AC202631054188", "nombre": "Miguel Ángel Álvarez Sabogal", "grupo": "11-3", "genero": "MASCULINO", "num_id": "1144627438", "codigo": "1910.0", "global": 242, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "MÁ", "has_photo": true, "photo_file": "fotos/1144627438.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 64, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 41, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 50, "nivel": "2", "decil": 37}, "mat": {"nombre": "Matemáticas", "puntaje": 50, "nivel": "2", "decil": 49}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 41, "nivel": "2", "decil": 26}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 47, "nivel": "2", "decil": 39}, "ing": {"nombre": "Inglés", "puntaje": 64, "nivel": "A2", "decil": 82}}, "conteo_bajos": 0}, {"puesto": 45, "registro": "AC202631053735", "nombre": "Cristian Ricardo Nuñez Correa", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1117931557", "codigo": "1215.0", "global": 240, "badge": "Nivel Medio-Alto", "badge_type": "medio", "initials": "CR", "has_photo": true, "photo_file": "fotos/1117931557.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Sociales y Ciudadanas", "mejor_puntaje": 61, "area_refuerzo": "Matemáticas", "peor_puntaje": 30, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 57, "nivel": "3", "decil": 67}, "mat": {"nombre": "Matemáticas", "puntaje": 30, "nivel": "1", "decil": 4}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 61, "nivel": "3", "decil": 86}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 45, "nivel": "2", "decil": 33}, "ing": {"nombre": "Inglés", "puntaje": 44, "nivel": "A-", "decil": 27}}, "conteo_bajos": 2}, {"puesto": 46, "registro": "AC202631054048", "nombre": "Leidy Viviana Cerquera Espinosa", "grupo": "11-1", "genero": "FEMENINO", "num_id": "1118370884", "codigo": "239.0", "global": 235, "badge": "Nivel Básico", "badge_type": "basico", "initials": "LV", "has_photo": true, "photo_file": "fotos/1118370884.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 54, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 40, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 54, "nivel": "3", "decil": 51}, "mat": {"nombre": "Matemáticas", "puntaje": 42, "nivel": "2", "decil": 23}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 40, "nivel": "1", "decil": 24}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 51, "nivel": "2", "decil": 54}, "ing": {"nombre": "Inglés", "puntaje": 50, "nivel": "A1", "decil": 48}}, "conteo_bajos": 2}, {"puesto": 47, "registro": "AC202631053693", "nombre": "Karenth Lizeth Monroy Parrado", "grupo": "11-3", "genero": "FEMENINO", "num_id": "1030281109", "codigo": "1941.0", "global": 235, "badge": "Nivel Básico", "badge_type": "basico", "initials": "KL", "has_photo": true, "photo_file": "fotos/1030281109.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 49, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 43, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 49, "nivel": "2", "decil": 35}, "mat": {"nombre": "Matemáticas", "puntaje": 47, "nivel": "2", "decil": 38}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 43, "nivel": "2", "decil": 31}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 49, "nivel": "2", "decil": 45}, "ing": {"nombre": "Inglés", "puntaje": 48, "nivel": "A1", "decil": 39}}, "conteo_bajos": 1}, {"puesto": 48, "registro": "AC202631054121", "nombre": "Jose Luis Poveda Hernandez", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1118367323", "codigo": "298.0", "global": 235, "badge": "Nivel Básico", "badge_type": "basico", "initials": "JL", "has_photo": true, "photo_file": "fotos/1118367323.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Matemáticas", "mejor_puntaje": 51, "area_refuerzo": "Lectura Crítica", "peor_puntaje": 43, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 43, "nivel": "2", "decil": 16}, "mat": {"nombre": "Matemáticas", "puntaje": 51, "nivel": "3", "decil": 52}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 49, "nivel": "2", "decil": 49}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 46, "nivel": "2", "decil": 35}, "ing": {"nombre": "Inglés", "puntaje": 45, "nivel": "A-", "decil": 30}}, "conteo_bajos": 1}, {"puesto": 49, "registro": "AC202631056324", "nombre": "Krinsley Dayanna Ordoñez Rueda", "grupo": "11-3", "genero": "FEMENINO", "num_id": "1029561071", "codigo": "2090.0", "global": 235, "badge": "Nivel Básico", "badge_type": "basico", "initials": "KD", "has_photo": false, "photo_file": "", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 52, "area_refuerzo": "Ciencias Naturales", "peor_puntaje": 42, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 52, "nivel": "3", "decil": 44}, "mat": {"nombre": "Matemáticas", "puntaje": 49, "nivel": "2", "decil": 47}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 45, "nivel": "2", "decil": 38}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 42, "nivel": "2", "decil": 21}, "ing": {"nombre": "Inglés", "puntaje": 48, "nivel": "A1", "decil": 40}}, "conteo_bajos": 1}, {"puesto": 50, "registro": "AC202631054030", "nombre": "Juan David Rodriguez Llanos", "grupo": "11-3", "genero": "MASCULINO", "num_id": "1029580305", "codigo": "2040.0", "global": 235, "badge": "Nivel Básico", "badge_type": "basico", "initials": "JD", "has_photo": true, "photo_file": "fotos/1029580305.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 57, "area_refuerzo": "Inglés", "peor_puntaje": 35, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 57, "nivel": "3", "decil": 65}, "mat": {"nombre": "Matemáticas", "puntaje": 53, "nivel": "3", "decil": 59}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 43, "nivel": "2", "decil": 33}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 39, "nivel": "1", "decil": 14}, "ing": {"nombre": "Inglés", "puntaje": 35, "nivel": "A-", "decil": 7}}, "conteo_bajos": 2}, {"puesto": 51, "registro": "AC202631054113", "nombre": "Sara Sofia Parra Chaux", "grupo": "11-2", "genero": "FEMENINO", "num_id": "1117931498", "codigo": "295.0", "global": 233, "badge": "Nivel Básico", "badge_type": "basico", "initials": "SS", "has_photo": true, "photo_file": "fotos/1117931498.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 61, "area_refuerzo": "Ciencias Naturales", "peor_puntaje": 39, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 54, "nivel": "3", "decil": 52}, "mat": {"nombre": "Matemáticas", "puntaje": 46, "nivel": "2", "decil": 35}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 43, "nivel": "2", "decil": 32}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 39, "nivel": "1", "decil": 14}, "ing": {"nombre": "Inglés", "puntaje": 61, "nivel": "A2", "decil": 77}}, "conteo_bajos": 1}, {"puesto": 52, "registro": "AC202631053495", "nombre": "Miguel Angel Artunduaga Soto", "grupo": "11-1", "genero": "MASCULINO", "num_id": "1117932298", "codigo": "1806.0", "global": 231, "badge": "Nivel Básico", "badge_type": "basico", "initials": "MA", "has_photo": false, "photo_file": "", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 53, "area_refuerzo": "Matemáticas", "peor_puntaje": 39, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 53, "nivel": "3", "decil": 50}, "mat": {"nombre": "Matemáticas", "puntaje": 39, "nivel": "2", "decil": 18}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 52, "nivel": "2", "decil": 61}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 41, "nivel": "2", "decil": 19}, "ing": {"nombre": "Inglés", "puntaje": 45, "nivel": "A-", "decil": 30}}, "conteo_bajos": 1}, {"puesto": 53, "registro": "AC202631053560", "nombre": "Maria Victoria Perea Pascuas", "grupo": "11-2", "genero": "FEMENINO", "num_id": "1117933552", "codigo": "1412.0", "global": 230, "badge": "Nivel Básico", "badge_type": "basico", "initials": "MV", "has_photo": true, "photo_file": "fotos/1117933552.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 53, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 42, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 50, "nivel": "2", "decil": 38}, "mat": {"nombre": "Matemáticas", "puntaje": 43, "nivel": "2", "decil": 28}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 42, "nivel": "2", "decil": 29}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 47, "nivel": "2", "decil": 38}, "ing": {"nombre": "Inglés", "puntaje": 53, "nivel": "A1", "decil": 57}}, "conteo_bajos": 1}, {"puesto": 54, "registro": "AC202631053974", "nombre": "Jonier Andres Lozano Buitrago", "grupo": "11-1", "genero": "MASCULINO", "num_id": "1119214296", "codigo": "254.0", "global": 229, "badge": "Nivel Básico", "badge_type": "basico", "initials": "JA", "has_photo": true, "photo_file": "fotos/1119214296.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Matemáticas", "mejor_puntaje": 49, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 40, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 48, "nivel": "2", "decil": 31}, "mat": {"nombre": "Matemáticas", "puntaje": 49, "nivel": "2", "decil": 45}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 40, "nivel": "1", "decil": 22}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 45, "nivel": "2", "decil": 30}, "ing": {"nombre": "Inglés", "puntaje": 49, "nivel": "A1", "decil": 44}}, "conteo_bajos": 2}, {"puesto": 55, "registro": "AC202631053602", "nombre": "Diego David Ortiz Cuchimba", "grupo": "11-3", "genero": "MASCULINO", "num_id": "1117933809", "codigo": "1922.0", "global": 229, "badge": "Nivel Básico", "badge_type": "basico", "initials": "DD", "has_photo": true, "photo_file": "fotos/1117933809.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 53, "area_refuerzo": "Inglés", "peor_puntaje": 29, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 53, "nivel": "3", "decil": 51}, "mat": {"nombre": "Matemáticas", "puntaje": 46, "nivel": "2", "decil": 36}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 47, "nivel": "2", "decil": 43}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 43, "nivel": "2", "decil": 25}, "ing": {"nombre": "Inglés", "puntaje": 29, "nivel": "A-", "decil": 2}}, "conteo_bajos": 1}, {"puesto": 56, "registro": "AC202631053503", "nombre": "Daniel  Sapuy Valencia", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1029560106", "codigo": "304.0", "global": 227, "badge": "Nivel Básico", "badge_type": "basico", "initials": "DS", "has_photo": true, "photo_file": "fotos/1029560106.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 48, "area_refuerzo": "Inglés", "peor_puntaje": 38, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 48, "nivel": "2", "decil": 31}, "mat": {"nombre": "Matemáticas", "puntaje": 46, "nivel": "2", "decil": 36}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 45, "nivel": "2", "decil": 39}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 45, "nivel": "2", "decil": 30}, "ing": {"nombre": "Inglés", "puntaje": 38, "nivel": "A-", "decil": 12}}, "conteo_bajos": 1}, {"puesto": 57, "registro": "AC202631054089", "nombre": "Eily Melinda Rosas Gomez", "grupo": "11-3", "genero": "FEMENINO", "num_id": "1117932097", "codigo": "1890.0", "global": 226, "badge": "Nivel Básico", "badge_type": "basico", "initials": "EM", "has_photo": true, "photo_file": "fotos/1117932097.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 49, "area_refuerzo": "Inglés", "peor_puntaje": 35, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 49, "nivel": "2", "decil": 33}, "mat": {"nombre": "Matemáticas", "puntaje": 42, "nivel": "2", "decil": 25}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 46, "nivel": "2", "decil": 40}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 47, "nivel": "2", "decil": 38}, "ing": {"nombre": "Inglés", "puntaje": 35, "nivel": "A-", "decil": 7}}, "conteo_bajos": 1}, {"puesto": 58, "registro": "AC202631053644", "nombre": "Angelo Jhair Horta Rada", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1118368373", "codigo": "360.0", "global": 226, "badge": "Nivel Básico", "badge_type": "basico", "initials": "AJ", "has_photo": true, "photo_file": "fotos/1118368373.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 50, "area_refuerzo": "Matemáticas", "peor_puntaje": 43, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 46, "nivel": "2", "decil": 23}, "mat": {"nombre": "Matemáticas", "puntaje": 43, "nivel": "2", "decil": 26}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 46, "nivel": "2", "decil": 41}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 44, "nivel": "2", "decil": 28}, "ing": {"nombre": "Inglés", "puntaje": 50, "nivel": "A1", "decil": 47}}, "conteo_bajos": 1}, {"puesto": 59, "registro": "AC202631054139", "nombre": "Nadia Yulieth Quiñones Gomez", "grupo": "11-2", "genero": "FEMENINO", "num_id": "1125182543", "codigo": "1681.0", "global": 224, "badge": "Nivel Básico", "badge_type": "basico", "initials": "NY", "has_photo": true, "photo_file": "fotos/1125182543.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 49, "area_refuerzo": "Matemáticas", "peor_puntaje": 38, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 49, "nivel": "2", "decil": 34}, "mat": {"nombre": "Matemáticas", "puntaje": 38, "nivel": "2", "decil": 16}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 44, "nivel": "2", "decil": 34}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 48, "nivel": "2", "decil": 40}, "ing": {"nombre": "Inglés", "puntaje": 45, "nivel": "A-", "decil": 28}}, "conteo_bajos": 1}, {"puesto": 60, "registro": "AC202631053479", "nombre": "Katherine  Rodriguez Borrero", "grupo": "11-1", "genero": "FEMENINO", "num_id": "1029561029", "codigo": "1165.0", "global": 224, "badge": "Nivel Básico", "badge_type": "basico", "initials": "KR", "has_photo": false, "photo_file": "", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 49, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 38, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 49, "nivel": "2", "decil": 33}, "mat": {"nombre": "Matemáticas", "puntaje": 46, "nivel": "2", "decil": 35}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 38, "nivel": "1", "decil": 19}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 45, "nivel": "2", "decil": 32}, "ing": {"nombre": "Inglés", "puntaje": 48, "nivel": "A1", "decil": 39}}, "conteo_bajos": 2}, {"puesto": 61, "registro": "AC202631053784", "nombre": "Hanna Valentina Sanchez Lopez", "grupo": "11-3", "genero": "FEMENINO", "num_id": "1020759671", "codigo": "2047.0", "global": 223, "badge": "Nivel Básico", "badge_type": "basico", "initials": "HV", "has_photo": true, "photo_file": "fotos/1020759671.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Ciencias Naturales", "mejor_puntaje": 48, "area_refuerzo": "Inglés", "peor_puntaje": 34, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 44, "nivel": "2", "decil": 19}, "mat": {"nombre": "Matemáticas", "puntaje": 44, "nivel": "2", "decil": 30}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 46, "nivel": "2", "decil": 40}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 48, "nivel": "2", "decil": 43}, "ing": {"nombre": "Inglés", "puntaje": 34, "nivel": "A-", "decil": 6}}, "conteo_bajos": 1}, {"puesto": 62, "registro": "AC202631054055", "nombre": "Lina Marcela Alegria Espinosa", "grupo": "11-2", "genero": "FEMENINO", "num_id": "1117933329", "codigo": "1680.0", "global": 220, "badge": "Nivel Básico", "badge_type": "basico", "initials": "LM", "has_photo": true, "photo_file": "fotos/1117933329.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 53, "area_refuerzo": "Ciencias Naturales", "peor_puntaje": 38, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 53, "nivel": "3", "decil": 50}, "mat": {"nombre": "Matemáticas", "puntaje": 42, "nivel": "2", "decil": 26}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 42, "nivel": "2", "decil": 29}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 38, "nivel": "1", "decil": 10}, "ing": {"nombre": "Inglés", "puntaje": 46, "nivel": "A-", "decil": 34}}, "conteo_bajos": 2}, {"puesto": 63, "registro": "AC202631053966", "nombre": "Jorge Andres Agudelo Valderrama", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1118368409", "codigo": "270.0", "global": 219, "badge": "Refuerzo Prioritario", "badge_type": "alerta", "initials": "JA", "has_photo": true, "photo_file": "fotos/1118368409.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Matemáticas", "mejor_puntaje": 54, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 34, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 47, "nivel": "2", "decil": 27}, "mat": {"nombre": "Matemáticas", "puntaje": 54, "nivel": "3", "decil": 61}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 34, "nivel": "1", "decil": 10}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 41, "nivel": "2", "decil": 18}, "ing": {"nombre": "Inglés", "puntaje": 41, "nivel": "A-", "decil": 18}}, "conteo_bajos": 2}, {"puesto": 64, "registro": "AC202631054071", "nombre": "Julian Andrey Rivera Sanchez", "grupo": "11-3", "genero": "MASCULINO", "num_id": "1124853202", "codigo": "1972.0", "global": 219, "badge": "Refuerzo Prioritario", "badge_type": "alerta", "initials": "JA", "has_photo": true, "photo_file": "fotos/1124853202.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 54, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 40, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 45, "nivel": "2", "decil": 20}, "mat": {"nombre": "Matemáticas", "puntaje": 43, "nivel": "2", "decil": 26}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 40, "nivel": "1", "decil": 25}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 44, "nivel": "2", "decil": 27}, "ing": {"nombre": "Inglés", "puntaje": 54, "nivel": "A1", "decil": 60}}, "conteo_bajos": 2}, {"puesto": 65, "registro": "AC202631053883", "nombre": "Wilfer Andredy Perez Cortez", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1118369725", "codigo": "1327.0", "global": 216, "badge": "Refuerzo Prioritario", "badge_type": "alerta", "initials": "WA", "has_photo": true, "photo_file": "fotos/1118369725.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 57, "area_refuerzo": "Matemáticas", "peor_puntaje": 34, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 54, "nivel": "3", "decil": 53}, "mat": {"nombre": "Matemáticas", "puntaje": 34, "nivel": "1", "decil": 7}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 34, "nivel": "1", "decil": 10}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 46, "nivel": "2", "decil": 34}, "ing": {"nombre": "Inglés", "puntaje": 57, "nivel": "A1", "decil": 69}}, "conteo_bajos": 3}, {"puesto": 66, "registro": "AC202631053610", "nombre": "Adrian Yesith Rojas Plazas", "grupo": "11-3", "genero": "MASCULINO", "num_id": "1117931544", "codigo": "1935.0", "global": 216, "badge": "Refuerzo Prioritario", "badge_type": "alerta", "initials": "AY", "has_photo": true, "photo_file": "fotos/1117931544.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Matemáticas", "mejor_puntaje": 49, "area_refuerzo": "Ciencias Naturales", "peor_puntaje": 35, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 46, "nivel": "2", "decil": 24}, "mat": {"nombre": "Matemáticas", "puntaje": 49, "nivel": "2", "decil": 47}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 43, "nivel": "2", "decil": 33}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 35, "nivel": "1", "decil": 5}, "ing": {"nombre": "Inglés", "puntaje": 42, "nivel": "A-", "decil": 20}}, "conteo_bajos": 2}, {"puesto": 67, "registro": "AC202631053917", "nombre": "Daniel Felipe Ramirez Perdomo", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1117514944", "codigo": "299.0", "global": 216, "badge": "Refuerzo Prioritario", "badge_type": "alerta", "initials": "DF", "has_photo": true, "photo_file": "fotos/1117514944.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 48, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 39, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 48, "nivel": "2", "decil": 30}, "mat": {"nombre": "Matemáticas", "puntaje": 42, "nivel": "2", "decil": 25}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 39, "nivel": "1", "decil": 22}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 45, "nivel": "2", "decil": 32}, "ing": {"nombre": "Inglés", "puntaje": 39, "nivel": "A-", "decil": 15}}, "conteo_bajos": 2}, {"puesto": 68, "registro": "AC202631053875", "nombre": "Karol Lizeth Yate Restrepo", "grupo": "11-1", "genero": "FEMENINO", "num_id": "1118371157", "codigo": "1825.0", "global": 212, "badge": "Refuerzo Prioritario", "badge_type": "alerta", "initials": "KL", "has_photo": true, "photo_file": "fotos/1118371157.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Ciencias Naturales", "mejor_puntaje": 47, "area_refuerzo": "Matemáticas", "peor_puntaje": 32, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 45, "nivel": "2", "decil": 21}, "mat": {"nombre": "Matemáticas", "puntaje": 32, "nivel": "1", "decil": 5}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 45, "nivel": "2", "decil": 39}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 47, "nivel": "2", "decil": 40}, "ing": {"nombre": "Inglés", "puntaje": 43, "nivel": "A-", "decil": 24}}, "conteo_bajos": 2}, {"puesto": 69, "registro": "AC202631053586", "nombre": "Mariana  Garcia Valencia", "grupo": "11-1", "genero": "FEMENINO", "num_id": "1117967094", "codigo": "1857.0", "global": 209, "badge": "Refuerzo Prioritario", "badge_type": "alerta", "initials": "MG", "has_photo": true, "photo_file": "fotos/1117967094.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 48, "area_refuerzo": "Ciencias Naturales", "peor_puntaje": 39, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 44, "nivel": "2", "decil": 20}, "mat": {"nombre": "Matemáticas", "puntaje": 40, "nivel": "2", "decil": 20}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 42, "nivel": "2", "decil": 29}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 39, "nivel": "1", "decil": 14}, "ing": {"nombre": "Inglés", "puntaje": 48, "nivel": "A1", "decil": 40}}, "conteo_bajos": 2}, {"puesto": 70, "registro": "AC202631053982", "nombre": "Laura Sofia Costo Barragan", "grupo": "11-3", "genero": "FEMENINO", "num_id": "1032799197", "codigo": "2052.0", "global": 208, "badge": "Refuerzo Prioritario", "badge_type": "alerta", "initials": "LS", "has_photo": true, "photo_file": "fotos/1032799197.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Matemáticas", "mejor_puntaje": 44, "area_refuerzo": "Lectura Crítica", "peor_puntaje": 41, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 41, "nivel": "2", "decil": 12}, "mat": {"nombre": "Matemáticas", "puntaje": 44, "nivel": "2", "decil": 32}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 41, "nivel": "2", "decil": 28}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 41, "nivel": "2", "decil": 19}, "ing": {"nombre": "Inglés", "puntaje": 41, "nivel": "A-", "decil": 18}}, "conteo_bajos": 1}, {"puesto": 71, "registro": "AC202631054170", "nombre": "Eider Julian Artunduaga Caro", "grupo": "11-1", "genero": "FEMENINO", "num_id": "1117933183", "codigo": "1285.0", "global": 206, "badge": "Refuerzo Prioritario", "badge_type": "alerta", "initials": "EJ", "has_photo": true, "photo_file": "fotos/1117933183.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 46, "area_refuerzo": "Matemáticas", "peor_puntaje": 39, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 40, "nivel": "2", "decil": 9}, "mat": {"nombre": "Matemáticas", "puntaje": 39, "nivel": "2", "decil": 17}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 43, "nivel": "2", "decil": 31}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 41, "nivel": "2", "decil": 18}, "ing": {"nombre": "Inglés", "puntaje": 46, "nivel": "A-", "decil": 31}}, "conteo_bajos": 1}, {"puesto": 72, "registro": "AC202631053859", "nombre": "Estefania  Trujillo Gomez", "grupo": "11-2", "genero": "FEMENINO", "num_id": "1117934091", "codigo": "1466.0", "global": 205, "badge": "Refuerzo Prioritario", "badge_type": "alerta", "initials": "ET", "has_photo": true, "photo_file": "fotos/1117934091.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 46, "area_refuerzo": "Inglés", "peor_puntaje": 36, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 46, "nivel": "2", "decil": 25}, "mat": {"nombre": "Matemáticas", "puntaje": 40, "nivel": "2", "decil": 18}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 39, "nivel": "1", "decil": 20}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 41, "nivel": "2", "decil": 18}, "ing": {"nombre": "Inglés", "puntaje": 36, "nivel": "A-", "decil": 9}}, "conteo_bajos": 2}, {"puesto": 73, "registro": "AC202631054022", "nombre": "Nicolas  Ruiz Restrepo", "grupo": "11-3", "genero": "MASCULINO", "num_id": "1117932113", "codigo": "2024.0", "global": 201, "badge": "Refuerzo Prioritario", "badge_type": "alerta", "initials": "NR", "has_photo": true, "photo_file": "fotos/1117932113.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Matemáticas", "mejor_puntaje": 48, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 29, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 38, "nivel": "2", "decil": 7}, "mat": {"nombre": "Matemáticas", "puntaje": 48, "nivel": "2", "decil": 41}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 29, "nivel": "1", "decil": 2}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 43, "nivel": "2", "decil": 24}, "ing": {"nombre": "Inglés", "puntaje": 48, "nivel": "A1", "decil": 41}}, "conteo_bajos": 2}, {"puesto": 74, "registro": "AC202631053834", "nombre": "Zuley Yuliana Garavis Roa", "grupo": "11-1", "genero": "FEMENINO", "num_id": "1118370657", "codigo": "246.0", "global": 200, "badge": "Refuerzo Prioritario", "badge_type": "alerta", "initials": "ZY", "has_photo": true, "photo_file": "fotos/1118370657.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 50, "area_refuerzo": "Matemáticas", "peor_puntaje": 30, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 50, "nivel": "2", "decil": 39}, "mat": {"nombre": "Matemáticas", "puntaje": 30, "nivel": "1", "decil": 4}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 39, "nivel": "1", "decil": 21}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 41, "nivel": "2", "decil": 19}, "ing": {"nombre": "Inglés", "puntaje": 40, "nivel": "A-", "decil": 17}}, "conteo_bajos": 3}, {"puesto": 75, "registro": "AC202631053800", "nombre": "Miguel Angel Tinoco Hurtado", "grupo": "11-3", "genero": "MASCULINO", "num_id": "1118370713", "codigo": "1936.0", "global": 198, "badge": "Refuerzo Prioritario", "badge_type": "alerta", "initials": "MA", "has_photo": true, "photo_file": "fotos/1118370713.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 44, "area_refuerzo": "Ciencias Naturales", "peor_puntaje": 34, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 42, "nivel": "2", "decil": 13}, "mat": {"nombre": "Matemáticas", "puntaje": 40, "nivel": "2", "decil": 19}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 41, "nivel": "2", "decil": 26}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 34, "nivel": "1", "decil": 3}, "ing": {"nombre": "Inglés", "puntaje": 44, "nivel": "A-", "decil": 25}}, "conteo_bajos": 2}, {"puesto": 76, "registro": "AC202631053941", "nombre": "Franklin Yulian Garcia Arango", "grupo": "11-1", "genero": "MASCULINO", "num_id": "1118025816", "codigo": "1447.0", "global": 195, "badge": "Refuerzo Prioritario", "badge_type": "alerta", "initials": "FY", "has_photo": true, "photo_file": "fotos/1118025816.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Matemáticas", "mejor_puntaje": 43, "area_refuerzo": "Ciencias Naturales", "peor_puntaje": 36, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 37, "nivel": "2", "decil": 6}, "mat": {"nombre": "Matemáticas", "puntaje": 43, "nivel": "2", "decil": 28}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 40, "nivel": "1", "decil": 24}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 36, "nivel": "1", "decil": 6}, "ing": {"nombre": "Inglés", "puntaje": 40, "nivel": "A-", "decil": 15}}, "conteo_bajos": 3}, {"puesto": 77, "registro": "AC202631053594", "nombre": "Jose Manuel Chavarro Ramirez", "grupo": "11-3", "genero": "MASCULINO", "num_id": "1117931756", "codigo": "315.0", "global": 192, "badge": "Refuerzo Prioritario", "badge_type": "alerta", "initials": "JM", "has_photo": true, "photo_file": "fotos/1117931756.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Inglés", "mejor_puntaje": 46, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 34, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 41, "nivel": "2", "decil": 11}, "mat": {"nombre": "Matemáticas", "puntaje": 41, "nivel": "2", "decil": 21}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 34, "nivel": "1", "decil": 9}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 35, "nivel": "1", "decil": 4}, "ing": {"nombre": "Inglés", "puntaje": 46, "nivel": "A-", "decil": 33}}, "conteo_bajos": 3}, {"puesto": 78, "registro": "AC202631053685", "nombre": "Carol Nicol Cabrera Suarez", "grupo": "11-3", "genero": "FEMENINO", "num_id": "1117818422", "codigo": "1909.0", "global": 186, "badge": "Refuerzo Prioritario", "badge_type": "alerta", "initials": "CN", "has_photo": true, "photo_file": "fotos/1117818422.jpg", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 45, "area_refuerzo": "Inglés", "peor_puntaje": 30, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 45, "nivel": "2", "decil": 22}, "mat": {"nombre": "Matemáticas", "puntaje": 44, "nivel": "2", "decil": 30}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 31, "nivel": "1", "decil": 4}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 31, "nivel": "1", "decil": 1}, "ing": {"nombre": "Inglés", "puntaje": 30, "nivel": "A-", "decil": 3}}, "conteo_bajos": 3}, {"puesto": 79, "registro": "AC202631053743", "nombre": "Kenier Gabriel Parra Gonzalez", "grupo": "11-3", "genero": "MASCULINO", "num_id": "", "codigo": "", "global": 185, "badge": "Refuerzo Prioritario", "badge_type": "alerta", "initials": "KG", "has_photo": false, "photo_file": "", "fecha_nacimiento": "", "direccion": "", "barrio": "", "telefono": "", "eps": "", "acudiente": "", "acudiente_parentesco": "", "acudiente_tel": "", "mejor_area": "Lectura Crítica", "mejor_puntaje": 40, "area_refuerzo": "Sociales y Ciudadanas", "peor_puntaje": 32, "materias": {"lc": {"nombre": "Lectura Crítica", "puntaje": 40, "nivel": "2", "decil": 10}, "mat": {"nombre": "Matemáticas", "puntaje": 39, "nivel": "2", "decil": 17}, "soc": {"nombre": "Sociales y Ciudadanas", "puntaje": 32, "nivel": "1", "decil": 5}, "cn": {"nombre": "Ciencias Naturales", "puntaje": 36, "nivel": "1", "decil": 6}, "ing": {"nombre": "Inglés", "puntaje": 40, "nivel": "A-", "decil": 17}}, "conteo_bajos": 3}], "ausentes": [{"nombre": "Bustos Artunduaga Sebastian", "grupo": "11-3", "genero": "MASCULINO", "num_id": "1119214846", "codigo": "2089", "initials": "BA", "has_photo": true, "photo_file": "fotos/1119214846.jpg", "telefono": "SI", "acudiente": "ISABEL ARTUNDUAGA CICERI", "acudiente_tel": "SEBASBUSTOSARTUNDUAGA2009@GMAIL.COM", "estado": "Sin reporte ICFES"}, {"nombre": "Castiblanco Mazo Jhon Alexander", "grupo": "11-3", "genero": "MASCULINO", "num_id": "1133150208", "codigo": "2039", "initials": "CM", "has_photo": true, "photo_file": "fotos/1133150208.jpg", "telefono": "SI", "acudiente": "ana milena medina cruz", "acudiente_tel": "3112201332", "estado": "Sin reporte ICFES"}, {"nombre": "Duque Velasco Maria Paula", "grupo": "11-3", "genero": "FEMENINO", "num_id": "1111790769", "codigo": "2097", "initials": "DV", "has_photo": false, "photo_file": "", "telefono": "SI", "acudiente": "MARTHA LUCIA GRISALES SERNA", "acudiente_tel": "lucYGRISALES298@GMAIL.COM", "estado": "Sin reporte ICFES"}, {"nombre": "Mora Mora Daniel Esteban", "grupo": "11-1", "genero": "MASCULINO", "num_id": "1117817482", "codigo": "2104", "initials": "MM", "has_photo": false, "photo_file": "", "telefono": "SI", "acudiente": "NINI JHOANA MORA GRAJALES", "acudiente_tel": "JOHANAMOR1991@GMAIL.COM", "estado": "Sin reporte ICFES"}, {"nombre": "Nacabera Chivara Yeison Andres", "grupo": "11-3", "genero": "MASCULINO", "num_id": "1118024458", "codigo": "2088", "initials": "NC", "has_photo": true, "photo_file": "fotos/1118024458.jpg", "telefono": "SI", "acudiente": "JESSICA PAOLA LOSADA CHIVARA", "acudiente_tel": "DORACHIVARA1971@GMAIL.COM", "estado": "Sin reporte ICFES"}, {"nombre": "Peña Hincapie Hadrian Stevan", "grupo": "11-3", "genero": "MASCULINO", "num_id": "1117523499", "codigo": "2133", "initials": "PH", "has_photo": false, "photo_file": "", "telefono": "SI", "acudiente": "ZHARICK STEPPANY CARDOZO HINCAPIE", "acudiente_tel": "ZHARICHCARDOZO15@GMAIL.COM", "estado": "Sin reporte ICFES"}, {"nombre": "Penagos Patiño Brayan Alexis", "grupo": "11-1", "genero": "MASCULINO", "num_id": "1126451104", "codigo": "2106", "initials": "PP", "has_photo": false, "photo_file": "", "telefono": "SI", "acudiente": "ZENEIRA PARRA HERRERA", "acudiente_tel": "DARWINPENAGOS93@GMAIL.COM", "estado": "Sin reporte ICFES"}, {"nombre": "Perez Espinosa Samuel", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1117522705", "codigo": "2117", "initials": "PE", "has_photo": false, "photo_file": "", "telefono": "SI", "acudiente": "JOANA SMILK ESPINOSA RIVERA", "acudiente_tel": "JOHANAESPINOSA@HOTMAIL.COM", "estado": "Sin reporte ICFES"}, {"nombre": "Rivera Moreno Miguel Angel", "grupo": "11-1", "genero": "MASCULINO", "num_id": "1203963044", "codigo": "2125", "initials": "RM", "has_photo": false, "photo_file": "", "telefono": "SI", "acudiente": "KELY DAYAN MORENO SANDOVAL", "acudiente_tel": "KELLYMS20@HOTMAIL.COM", "estado": "Sin reporte ICFES"}, {"nombre": "Rojas Rojas Sebastian", "grupo": "11-3", "genero": "MASCULINO", "num_id": "1118369074", "codigo": "2107", "initials": "RR", "has_photo": false, "photo_file": "", "telefono": "SI", "acudiente": "YAHANA ANDREA ROJAS TRUJILLO", "acudiente_tel": "YAHANA.ANDREA789@GMAIL.COM", "estado": "Sin reporte ICFES"}, {"nombre": "Rojas Parra Miguel Angel", "grupo": "11-2", "genero": "MASCULINO", "num_id": "1119214907", "codigo": "2105", "initials": "RP", "has_photo": false, "photo_file": "", "telefono": "SI", "acudiente": "limbania parra snatanilla", "acudiente_tel": "LIMBANIAPARRA266@GMAIL.COM", "estado": "Sin reporte ICFES"}]};
     const students = RAW_DATA.estudiantes;
     const absent = RAW_DATA.ausentes;
@@ -955,14 +969,132 @@
     let currentLightboxStudentIndex = null;
     let localPhotos = {};
 
-    try {
-      const stored = localStorage.getItem('migani_student_photos');
-      if (stored) localPhotos = JSON.parse(stored);
-    } catch (e) {
-      console.warn("Storage not available", e);
+    // Código de autenticación institucional (oculto mediante Base64)
+    const AUTH_KEY_B64 = 'U2lzdGVtYXMyMDI2'; // Clave por defecto oculta
+    const AUTH_KEY_ALT = 'c2lzdGVtYXMyMDI2';
+
+    function checkCredentials(val) {
+      if (!val) return false;
+      const clean = val.trim();
+      try {
+        const b64 = btoa(unescape(encodeURIComponent(clean)));
+        const b64Lower = btoa(unescape(encodeURIComponent(clean.toLowerCase())));
+        if (b64 === AUTH_KEY_B64 || b64Lower === AUTH_KEY_ALT || clean === atob(AUTH_KEY_B64) || clean.toLowerCase() === atob(AUTH_KEY_B64).toLowerCase()) {
+          return true;
+        }
+      } catch (err) {
+        if (clean === atob(AUTH_KEY_B64) || clean.toLowerCase() === atob(AUTH_KEY_B64).toLowerCase()) {
+          return true;
+        }
+      }
+      return false;
     }
 
+    function handleAuthSubmit(e) {
+      if (e) {
+        try { e.preventDefault(); e.stopPropagation(); } catch (err) {}
+      }
+      const inputEl = document.getElementById('auth-password');
+      const errorEl = document.getElementById('auth-error');
+      if (!inputEl) return false;
+
+      const val = inputEl.value;
+
+      if (checkCredentials(val)) {
+        // Acceso concedido
+        try {
+          sessionStorage.setItem('migani_auth_token', 'AUTHORIZED_DOCENTE_DIRECTIVO');
+        } catch (err) {}
+        if (errorEl) errorEl.classList.add('hidden');
+        unlockPortal();
+      } else {
+        // Acceso denegado
+        if (errorEl) errorEl.classList.remove('hidden');
+        inputEl.classList.add('border-rose-500', 'animate-shake');
+        setTimeout(() => inputEl.classList.remove('animate-shake'), 450);
+        inputEl.value = '';
+        inputEl.focus();
+      }
+      return false;
+    }
+
+    function unlockPortal() {
+      const overlay = document.getElementById('auth-overlay');
+      const mainApp = document.getElementById('main-app');
+      
+      if (overlay) {
+        overlay.classList.add('hidden');
+        overlay.style.display = 'none';
+      }
+      if (mainApp) {
+        mainApp.classList.remove('hidden');
+        mainApp.style.display = 'block';
+      }
+      try {
+        initApp();
+      } catch (err) {
+        console.error('Error inicializando app:', err);
+      }
+    }
+
+    function logout() {
+      try {
+        sessionStorage.removeItem('migani_auth_token');
+      } catch (err) {}
+      const mainApp = document.getElementById('main-app');
+      const overlay = document.getElementById('auth-overlay');
+      if (mainApp) {
+        mainApp.classList.add('hidden');
+        mainApp.style.display = 'none';
+      }
+      if (overlay) {
+        overlay.classList.remove('hidden');
+        overlay.style.display = 'flex';
+      }
+      const inputEl = document.getElementById('auth-password');
+      const errorEl = document.getElementById('auth-error');
+      if (inputEl) {
+        inputEl.value = '';
+        inputEl.focus();
+      }
+      if (errorEl) errorEl.classList.add('hidden');
+    }
+
+    function togglePasswordVisibility() {
+      const inputEl = document.getElementById('auth-password');
+      const icon = document.getElementById('pwd-eye-icon');
+      if (inputEl.type === 'password') {
+        inputEl.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        inputEl.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons();
+    }
+
+    // Comprobar sesión al inicio
     document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      const isAuth = sessionStorage.getItem('migani_auth_token') === 'AUTHORIZED_DOCENTE_DIRECTIVO';
+      if (isAuth) {
+        unlockPortal();
+      } else {
+        document.getElementById('auth-password').focus();
+      }
+    });
+
+    // Inicializar app tras login
+    let appInitialized = false;
+    function initApp() {
+      if (appInitialized) return;
+      appInitialized = true;
+
+      try {
+        const stored = localStorage.getItem('migani_student_photos');
+        if (stored) localPhotos = JSON.parse(stored);
+      } catch (e) {}
+
       renderStudentsGrid(students);
       renderTop10Table();
       renderPodiumPhotos();
@@ -978,7 +1110,7 @@
           closeCreditsModal();
         }
       });
-    });
+    }
 
     function switchTab(tabName) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -1069,10 +1201,8 @@
         html += `
           <div class="bg-white rounded-2xl p-5 border border-slate-200 hover:border-blue-400 hover:shadow-lg transition-all flex flex-col justify-between group">
             <div>
-              <!-- Header Tarjeta -->
               <div class="flex items-start justify-between gap-3">
                 <div class="flex items-center gap-3">
-                  <!-- Clic en la foto: VER FOTO GRANDE -->
                   <div class="relative group/avatar cursor-pointer" onclick="openPhotoLightbox(${realIdx})" title="Haz clic para ver la foto en grande">
                     ${getStudentPhotoHtml(st, "w-14 h-14 text-base")}
                     <div class="absolute inset-0 bg-blue-900/40 text-white rounded-2xl opacity-0 group-hover/avatar:opacity-100 flex items-center justify-center transition text-xs">
@@ -1096,7 +1226,6 @@
                 </div>
               </div>
 
-              <!-- Píldoras de Materias -->
               <div class="grid grid-cols-5 gap-1.5 mt-4 pt-3 border-t border-slate-100 text-center">
                 <div class="p-1.5 rounded-lg bg-slate-50 border border-slate-100">
                   <span class="text-[9px] text-slate-400 block uppercase font-bold">Lec</span>
@@ -1120,14 +1249,12 @@
                 </div>
               </div>
 
-              <!-- Fortalezas / Refuerzo -->
               <div class="mt-3 flex items-center justify-between text-[11px] text-slate-500">
                 <span class="truncate max-w-[140px] text-emerald-700 font-medium">✓ ${st.mejor_area.split(' ')[0]}: <strong>${st.mejor_puntaje}</strong></span>
                 <span class="truncate max-w-[140px] text-rose-600 font-medium">⚠ ${st.area_refuerzo.split(' ')[0]}: <strong>${st.peor_puntaje}</strong></span>
               </div>
             </div>
 
-            <!-- Footer Tarjeta: CAMBIAR FOTO SOLO AQUÍ -->
             <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
               <button onclick="event.stopPropagation(); triggerPhotoUpload('${st.num_id || st.registro}')" class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-700 text-xs font-semibold inline-flex items-center gap-1.5 transition" title="Haz clic aquí para cambiar la foto del estudiante">
                 <i data-lucide="camera" class="w-3.5 h-3.5 text-blue-600"></i>
@@ -1146,7 +1273,6 @@
       lucide.createIcons();
     }
 
-    // ==================== VISOR DE FOTO EN GRANDE (LIGHTBOX) ====================
     function openPhotoLightbox(idx) {
       if (idx === null || idx === undefined || !students[idx]) return;
       currentLightboxStudentIndex = idx;
@@ -1192,7 +1318,6 @@
       currentLightboxStudentIndex = null;
     }
 
-    // ==================== MODAL DE CRÉDITOS ====================
     function openCreditsModal() {
       const modal = document.getElementById('credits-modal');
       modal.classList.remove('hidden');
@@ -1203,7 +1328,6 @@
       document.getElementById('credits-modal').classList.add('hidden');
     }
 
-    // ==================== FILTROS Y BÚSQUEDA ====================
     function applyFilters() {
       const q = document.getElementById('search-input').value.toLowerCase().trim();
       const grp = document.getElementById('filter-group').value;
@@ -1453,10 +1577,6 @@
         `;
       });
       tbody.innerHTML = html;
-    }
-
-    function exportToExcel() {
-      window.location.href = 'analisis_detallado_icfes_2026.xlsx';
     }
 
     function initCharts() {
