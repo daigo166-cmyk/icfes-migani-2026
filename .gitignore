@@ -1,0 +1,9 @@
+# Python temporals
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Local backup / temporary scripts
+*.tmp
+*.log
