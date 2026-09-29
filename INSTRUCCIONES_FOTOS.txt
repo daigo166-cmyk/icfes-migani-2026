@@ -1,0 +1,44 @@
+=============================================================================
+ GUÍA PARA COLOCAR Y GESTIONAR LAS FOTOS DE LOS ESTUDIANTES
+ Institución Educativa Juan Bautista Migani - Jornada Mañana
+=============================================================================
+
+Tiene dos maneras sencillas de colocar las fotos de los estudiantes:
+
+OPCIÓN 1 (La más fácil e interactiva): DIRECTO DESDE LA PÁGINA WEB
+-----------------------------------------------------------------------------
+1. Abra el archivo "index.html" haciendo doble clic.
+2. En cada tarjeta de estudiante verá un botón con forma de cámara (📷).
+3. Haga clic sobre la cámara o sobre el avatar del estudiante.
+4. Seleccione la foto desde su computador (JPG, PNG, WEBP).
+5. ¡Listo! La foto se mostrará inmediatamente y quedará guardada de forma 
+   permanente en su navegador para ese estudiante.
+
+OPCIÓN 2: CARGA AUTOMÁTICA EN LA CARPETA "fotos"
+-----------------------------------------------------------------------------
+Si tiene las fotos guardadas en su computadora:
+1. Abra la carpeta "fotos" que se encuentra dentro de:
+   Desktop\icfes 2026\fotos\
+2. Guarde allí las fotografías de los estudiantes.
+3. El nombre de cada foto debe ser el número de documento de identidad 
+   del estudiante con extensión .jpg.
+   
+   Ejemplos:
+   - Para Jeremy Joel Moreno (Doc: 1119214846):
+     Nombre del archivo: fotos\1119214846.jpg
+
+   - Para Manuela Portilla (Doc: 1117522...):
+     Nombre del archivo: fotos\1117522...jpg
+
+4. Al abrir o recargar "index.html", el sistema detectará la foto y la mostrará
+   automáticamente.
+
+=============================================================================
+ARCHIVOS DISPONIBLES EN ESTA CARPETA:
+=============================================================================
+1. index.html                   -> Portal web visual interactivo con fotos, buscador,
+                                   podio de honor, gráficos y fichas individuales.
+2. analisis_detallado_icfes_2026.xlsx -> Libro Excel profesional con todos los cálculos.
+3. estudiantes_data.json        -> Base de datos estructurada de los estudiantes.
+4. fotos/                       -> Carpeta lista para colocar las fotos locales.
+=============================================================================
